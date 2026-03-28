@@ -10,6 +10,7 @@ import {
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { useRegisterMutation } from "../features/api/authApi";
 
 const Register = () => {
   const [formData, setFormData] = useState({
@@ -17,6 +18,8 @@ const Register = () => {
     email: "",
     password: "",
   });
+
+  const [register, { isLoading, error }] = useRegisterMutation();
 
   const handleChange = (e) => {
     const { name, value } = e.target;
@@ -27,9 +30,15 @@ const Register = () => {
     }));
   };
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
-    console.log(formData);
+
+    try {
+      const response = await register(formData).unwrap();
+      console.log("Registered successfully:", response);
+    } catch (err) {
+      console.error("Registration failed:", err);
+    }
   };
 
   return (
@@ -92,8 +101,14 @@ const Register = () => {
                 </p>
               </div>
 
-              <Button type="submit" className="w-full">
-                Create account
+              {error && (
+                <p className="text-sm text-red-500">
+                  {error?.data?.message || "Something went wrong"}
+                </p>
+              )}
+
+              <Button type="submit" className="w-full" disabled={isLoading}>
+                {isLoading ? "Creating account..." : "Create account"}
               </Button>
             </form>
 
