@@ -1,12 +1,11 @@
-import { Button } from "@/components/ui/button";
+import { Routes, Route } from "react-router-dom";
+import Register from "./pages/Register";
+
 function App() {
   return (
-    <>
-      <h1>Welcome to the App!</h1>
-      <Button variant="default" size="lg">
-        Click Me
-      </Button>
-    </>
+    <Routes>
+      <Route path="/register" element={<Register />} />
+    </Routes>
   );
 }
 
