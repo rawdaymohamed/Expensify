@@ -1,5 +1,7 @@
-import { useState } from "react";
 import { Link } from "react-router-dom";
+import { useForm } from "react-hook-form";
+import { zodResolver } from "@hookform/resolvers/zod";
+
 import {
   Card,
   CardContent,
@@ -10,32 +12,32 @@ import {
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+
 import { useRegisterMutation } from "../features/api/authApi";
+import { registerSchema } from "../validations/authSchema";
 
 const Register = () => {
-  const [formData, setFormData] = useState({
-    name: "",
-    email: "",
-    password: "",
+  const [registerUser, { isLoading, error }] = useRegisterMutation();
+
+  const {
+    register,
+    handleSubmit,
+    formState: { errors },
+    reset,
+  } = useForm({
+    resolver: zodResolver(registerSchema),
+    defaultValues: {
+      name: "",
+      email: "",
+      password: "",
+    },
   });
 
-  const [register, { isLoading, error }] = useRegisterMutation();
-
-  const handleChange = (e) => {
-    const { name, value } = e.target;
-
-    setFormData((prev) => ({
-      ...prev,
-      [name]: value,
-    }));
-  };
-
-  const handleSubmit = async (e) => {
-    e.preventDefault();
-
+  const onSubmit = async (data) => {
     try {
-      const response = await register(formData).unwrap();
+      const response = await registerUser(data).unwrap();
       console.log("Registered successfully:", response);
+      reset();
     } catch (err) {
       console.error("Registration failed:", err);
     }
@@ -55,50 +57,56 @@ const Register = () => {
           </CardHeader>
 
           <CardContent>
-            <form onSubmit={handleSubmit} className="space-y-5">
+            <form
+              onSubmit={handleSubmit(onSubmit)}
+              className="space-y-5"
+              noValidate
+            >
               <div className="space-y-2">
                 <Label htmlFor="name">Full name</Label>
                 <Input
                   id="name"
-                  name="name"
                   type="text"
                   placeholder="Enter your full name"
-                  value={formData.name}
-                  onChange={handleChange}
                   autoComplete="name"
-                  required
+                  {...register("name")}
                 />
+                {errors.name && (
+                  <p className="text-sm text-red-500">{errors.name.message}</p>
+                )}
               </div>
 
               <div className="space-y-2">
                 <Label htmlFor="email">Email address</Label>
                 <Input
                   id="email"
-                  name="email"
                   type="email"
                   placeholder="Enter your email"
-                  value={formData.email}
-                  onChange={handleChange}
                   autoComplete="email"
-                  required
+                  {...register("email")}
                 />
+                {errors.email && (
+                  <p className="text-sm text-red-500">{errors.email.message}</p>
+                )}
               </div>
 
               <div className="space-y-2">
                 <Label htmlFor="password">Password</Label>
                 <Input
                   id="password"
-                  name="password"
                   type="password"
                   placeholder="Create a password"
-                  value={formData.password}
-                  onChange={handleChange}
                   autoComplete="new-password"
-                  required
+                  {...register("password")}
                 />
                 <p className="text-sm text-muted-foreground">
                   Use at least 6 characters.
                 </p>
+                {errors.password && (
+                  <p className="text-sm text-red-500">
+                    {errors.password.message}
+                  </p>
+                )}
               </div>
 
               {error && (
