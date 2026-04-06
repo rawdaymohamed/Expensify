@@ -1,7 +1,7 @@
 import { Link, useNavigate } from "react-router-dom";
-import { useEffect } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
+import { useEffect } from "react";
 
 import {
   Card,
@@ -14,21 +14,19 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 
-import { useRegisterMutation } from "../features/api/authApi";
-import { registerSchema } from "../validations/authSchema";
+import { useLoginMutation } from "../features/api/authApi";
+import { loginSchema } from "../validations/authSchema";
 
-const Register = () => {
+const Login = () => {
   const navigate = useNavigate();
 
   useEffect(() => {
     const token =
       typeof window !== "undefined" ? localStorage.getItem("token") : null;
-    if (token) {
-      navigate("/");
-    }
+    if (token) navigate("/");
   }, [navigate]);
 
-  const [registerUser, { isLoading, error }] = useRegisterMutation();
+  const [loginUser, { isLoading, error }] = useLoginMutation();
 
   const {
     register,
@@ -36,9 +34,8 @@ const Register = () => {
     formState: { errors },
     reset,
   } = useForm({
-    resolver: zodResolver(registerSchema),
+    resolver: zodResolver(loginSchema),
     defaultValues: {
-      name: "",
       email: "",
       password: "",
     },
@@ -46,18 +43,16 @@ const Register = () => {
 
   const onSubmit = async (data) => {
     try {
-      const response = await registerUser(data).unwrap();
-      // Save JWT and user info to localStorage
-      if (response?.token) {
-        localStorage.setItem("token", response.token);
-      }
-      if (response?.user) {
+      const response = await loginUser(data).unwrap();
+
+      if (response?.token) localStorage.setItem("token", response.token);
+      if (response?.user)
         localStorage.setItem("user", JSON.stringify(response.user));
-      }
 
       reset();
+      navigate("/");
     } catch (err) {
-      console.error("Registration failed:", err);
+      console.error("Login failed:", err);
     }
   };
 
@@ -66,11 +61,9 @@ const Register = () => {
       <div className="container mx-auto flex min-h-screen items-center justify-center px-4 py-10">
         <Card className="w-full max-w-md shadow-lg">
           <CardHeader className="space-y-2 text-center">
-            <CardTitle className="text-2xl font-bold">
-              Create your account
-            </CardTitle>
+            <CardTitle className="text-2xl font-bold">Sign in</CardTitle>
             <CardDescription>
-              Start tracking your income and expenses with Expensify
+              Welcome back — sign in to continue
             </CardDescription>
           </CardHeader>
 
@@ -80,20 +73,6 @@ const Register = () => {
               className="space-y-5"
               noValidate
             >
-              <div className="space-y-2">
-                <Label htmlFor="name">Full name</Label>
-                <Input
-                  id="name"
-                  type="text"
-                  placeholder="Enter your full name"
-                  autoComplete="name"
-                  {...register("name")}
-                />
-                {errors.name && (
-                  <p className="text-sm text-red-500">{errors.name.message}</p>
-                )}
-              </div>
-
               <div className="space-y-2">
                 <Label htmlFor="email">Email address</Label>
                 <Input
@@ -113,13 +92,10 @@ const Register = () => {
                 <Input
                   id="password"
                   type="password"
-                  placeholder="Create a password"
-                  autoComplete="new-password"
+                  placeholder="Your password"
+                  autoComplete="current-password"
                   {...register("password")}
                 />
-                <p className="text-sm text-muted-foreground">
-                  Use at least 6 characters.
-                </p>
                 {errors.password && (
                   <p className="text-sm text-red-500">
                     {errors.password.message}
@@ -134,17 +110,17 @@ const Register = () => {
               )}
 
               <Button type="submit" className="w-full" disabled={isLoading}>
-                {isLoading ? "Creating account..." : "Create account"}
+                {isLoading ? "Signing in..." : "Sign in"}
               </Button>
             </form>
 
             <p className="mt-6 text-center text-sm text-muted-foreground">
-              Already have an account?{" "}
+              New here?{" "}
               <Link
-                to="/login"
+                to="/register"
                 className="font-medium text-foreground underline underline-offset-4"
               >
-                Sign in
+                Create an account
               </Link>
             </p>
           </CardContent>
@@ -154,4 +130,4 @@ const Register = () => {
   );
 };
 
-export default Register;
+export default Login;
