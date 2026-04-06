@@ -36,7 +36,14 @@ const Register = () => {
   const onSubmit = async (data) => {
     try {
       const response = await registerUser(data).unwrap();
-      console.log("Registered successfully:", response);
+      // Save JWT and user info to localStorage
+      if (response?.token) {
+        localStorage.setItem("token", response.token);
+      }
+      if (response?.user) {
+        localStorage.setItem("user", JSON.stringify(response.user));
+      }
+
       reset();
     } catch (err) {
       console.error("Registration failed:", err);
