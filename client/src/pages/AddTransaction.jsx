@@ -16,7 +16,8 @@ import { Textarea } from "@/components/ui/textarea";
 
 import { addTransactionSchema } from "../validations/transactionSchema";
 import { useCreateTransactionMutation } from "@/features/api/transactionApi";
-
+import { useNavigate } from "react-router-dom";
+import { ArrowLeft } from "lucide-react";
 import { toast } from "sonner";
 const AddTransaction = () => {
   const {
@@ -35,6 +36,7 @@ const AddTransaction = () => {
   });
   const [createTransaction, { isLoading, error }] =
     useCreateTransactionMutation();
+  const navigate = useNavigate();
   const onSubmit = async (data) => {
     try {
       await createTransaction(data).unwrap();
@@ -42,6 +44,7 @@ const AddTransaction = () => {
       toast.success(
         `${data.type === "expense" ? "Expense recorded 💸" : "Income added 💰"}`,
       );
+      navigate("/");
     } catch (err) {
       console.error("Failed to create transaction:", err);
 
@@ -51,6 +54,16 @@ const AddTransaction = () => {
   return (
     <main className="min-h-screen bg-muted/30 px-4 py-6 flex flex-col justify-center">
       <div className="mx-auto w-full max-w-md">
+        <div className="mb-4">
+          <Button
+            variant="ghost"
+            onClick={() => navigate("/")}
+            className="flex items-center gap-2"
+          >
+            <ArrowLeft className="w-4 h-4" />
+            Back
+          </Button>
+        </div>
         <Card className="border-none shadow-sm sm:border sm:shadow-md">
           <CardHeader className="space-y-1">
             <CardTitle className="text-2xl">Add Transaction</CardTitle>
