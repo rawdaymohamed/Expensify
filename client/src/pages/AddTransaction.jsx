@@ -44,6 +44,7 @@ const AddTransaction = () => {
       toast.success(
         `${data.type === "expense" ? "Expense recorded 💸" : "Income added 💰"}`,
       );
+      navigate("/");
     } catch (err) {
       console.error("Failed to create transaction:", err);
 

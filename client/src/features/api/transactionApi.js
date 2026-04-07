@@ -4,6 +4,7 @@ const baseUrl = import.meta.env.VITE_API_URL;
 
 export const transactionApi = createApi({
   reducerPath: "transactionApi",
+  tagTypes: ["Transaction"],
   baseQuery: fetchBaseQuery({
     baseUrl,
     prepareHeaders: (headers, { getState }) => {
@@ -23,8 +24,16 @@ export const transactionApi = createApi({
         method: "POST",
         body: transactionData,
       }),
+      invalidatesTags: ["Transaction"],
+    }),
+
+    getTransactions: builder.query({
+      query: ({ page = 1, limit = 6 } = {}) =>
+        `/transactions?page=${page}&limit=${limit}`,
+      providesTags: ["Transaction"],
     }),
   }),
 });
 
-export const { useCreateTransactionMutation } = transactionApi;
+export const { useCreateTransactionMutation, useGetTransactionsQuery } =
+  transactionApi;
