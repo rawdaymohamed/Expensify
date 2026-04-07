@@ -47,8 +47,8 @@ const Home = () => {
         </section>
       </div>
 
-      {/* Floating Add Button */}
-      <div className="pointer-events-none fixed bottom-6 left-0 right-0 z-50">
+      {/* Mobile Floating Add Button */}
+      <div className="pointer-events-none fixed bottom-6 left-0 right-0 z-50 md:hidden">
         <div className="mx-auto flex max-w-5xl justify-end px-4 sm:px-6 lg:px-8">
           <Button
             onClick={() => navigate("/add-transaction")}
@@ -56,7 +56,7 @@ const Home = () => {
             className="pointer-events-auto h-16 w-16 rounded-full bg-black text-white shadow-lg hover:bg-black/90"
             aria-label="Add transaction"
           >
-            <Plus className="h-10 w-10" strokeWidth={2.5} />
+            <Plus className="h-8 w-8" strokeWidth={2.5} />
           </Button>
         </div>
       </div>

@@ -2,8 +2,9 @@ import React, { useState } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { Receipt, ArrowLeft, ArrowRight } from "lucide-react";
+import { Receipt, ArrowLeft, ArrowRight, Plus } from "lucide-react";
 import { useGetTransactionsQuery } from "@/features/api/transactionApi";
+import { useNavigate } from "react-router-dom";
 
 const formatCurrency = (amount) => {
   return new Intl.NumberFormat("en-US", {
@@ -98,9 +99,9 @@ const TransactionItem = ({ transaction }) => {
 };
 
 const TransactionsList = () => {
+  const navigate = useNavigate();
   const [page, setPage] = useState(1);
   const limit = 6;
-
   const { data, isLoading, isError, error } = useGetTransactionsQuery({
     page,
     limit,
@@ -160,8 +161,19 @@ const TransactionsList = () => {
 
   return (
     <div>
-      <h2 className="text-xl mb-4">Recent Transactions</h2>
+      <div className="mb-4 flex items-center justify-between gap-3">
+        <h2 className="text-xl font-semibold text-slate-900">
+          Recent Transactions
+        </h2>
 
+        <Button
+          onClick={() => navigate("/add-transaction")}
+          className="hidden md:inline-flex rounded-full bg-black text-white hover:bg-black/90"
+        >
+          <Plus className="mr-2 h-4 w-4" />
+          Add Transaction
+        </Button>
+      </div>
       <div className="space-y-4">
         {transactions.map((transaction) => (
           <TransactionItem key={transaction._id} transaction={transaction} />
