@@ -142,7 +142,19 @@ const TransactionsList = () => {
     return (
       <Card className="border-0 shadow-sm">
         <CardHeader>
-          <CardTitle className="text-xl">Recent Transactions</CardTitle>
+          <div className="mb-4 flex items-center justify-between gap-3">
+            <h2 className="text-xl font-semibold text-slate-900">
+              Recent Transactions
+            </h2>
+
+            <Button
+              onClick={() => navigate("/add-transaction")}
+              className="hidden md:inline-flex rounded-full bg-black text-white hover:bg-black/90"
+            >
+              <Plus className="mr-2 h-4 w-4" />
+              Add Transaction
+            </Button>
+          </div>
         </CardHeader>
         <CardContent className="flex flex-col items-center justify-center py-10 text-center">
           <div className="mb-4 flex h-12 w-12 items-center justify-center rounded-xl bg-slate-100">
