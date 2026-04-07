@@ -8,12 +8,11 @@ import TransactionsList from "@/components/TransactionsList";
 const Home = () => {
   const navigate = useNavigate();
 
-  const handleLogout = () => {
+  const handleLogout = React.useCallback(() => {
     localStorage.removeItem("token");
     localStorage.removeItem("user");
     navigate("/login");
-  };
-
+  }, [navigate]);
   return (
     <main className="min-h-screen bg-slate-50">
       <div className="mx-auto max-w-5xl px-4 py-5 sm:px-6 lg:px-8">
