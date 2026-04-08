@@ -32,6 +32,10 @@ export const transactionApi = createApi({
         `/transactions?page=${page}&limit=${limit}`,
       providesTags: ["Transaction"],
     }),
+    getSummary: builder.query({
+      query: () => `/transactions/summary`,
+      providesTags: ["Transaction"],
+    }),
     deleteTransaction: builder.mutation({
       query: (id) => ({
         url: `/transactions/${id}`,
@@ -57,6 +61,7 @@ export const transactionApi = createApi({
 export const {
   useCreateTransactionMutation,
   useGetTransactionsQuery,
+  useGetSummaryQuery,
   useDeleteTransactionMutation,
   useUpdateTransactionMutation,
   useGetTransactionByIdQuery,

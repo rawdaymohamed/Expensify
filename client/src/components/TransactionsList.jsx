@@ -16,6 +16,7 @@ import {
 } from "@/features/api/transactionApi";
 import { useNavigate } from "react-router-dom";
 import { toast } from "sonner";
+import TransactionSummary from "@/components/TransactionSummary";
 
 const formatCurrency = (amount) => {
   return new Intl.NumberFormat("en-US", {
@@ -154,67 +155,77 @@ const TransactionsList = () => {
   };
   if (isLoading) {
     return (
-      <Card className="border-0 shadow-sm">
-        <CardHeader>
-          <CardTitle className="text-xl">Recent Transactions</CardTitle>
-        </CardHeader>
-        <CardContent>
-          <p className="text-sm text-slate-500">Loading transactions...</p>
-        </CardContent>
-      </Card>
+      <div>
+        <TransactionSummary />
+        <Card className="border-0 shadow-sm">
+          <CardHeader>
+            <CardTitle className="text-xl">Recent Transactions</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <p className="text-sm text-slate-500">Loading transactions...</p>
+          </CardContent>
+        </Card>
+      </div>
     );
   }
 
   if (isError) {
     return (
-      <Card className="border-0 shadow-sm">
-        <CardHeader>
-          <CardTitle className="text-xl">Recent Transactions</CardTitle>
-        </CardHeader>
-        <CardContent>
-          <p className="text-sm text-red-500">
-            {error?.data?.message || "Failed to load transactions."}
-          </p>
-        </CardContent>
-      </Card>
+      <div>
+        <TransactionSummary />
+        <Card className="border-0 shadow-sm">
+          <CardHeader>
+            <CardTitle className="text-xl">Recent Transactions</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <p className="text-sm text-red-500">
+              {error?.data?.message || "Failed to load transactions."}
+            </p>
+          </CardContent>
+        </Card>
+      </div>
     );
   }
 
   if (!transactions.length) {
     return (
-      <Card className="border-0 shadow-sm">
-        <CardHeader>
-          <div className="mb-4 flex items-center justify-between gap-3">
-            <h2 className="text-xl font-semibold text-slate-900">
-              Recent Transactions
-            </h2>
+      <div>
+        <TransactionSummary />
+        <Card className="border-0 shadow-sm">
+          <CardHeader>
+            <div className="mb-4 flex items-center justify-between gap-3">
+              <h2 className="text-xl font-semibold text-slate-900">
+                Recent Transactions
+              </h2>
 
-            <Button
-              onClick={() => navigate("/add-transaction")}
-              className="hidden md:inline-flex rounded-full bg-black text-white hover:bg-black/90"
-            >
-              <Plus className="mr-2 h-4 w-4" />
-              Add Transaction
-            </Button>
-          </div>
-        </CardHeader>
-        <CardContent className="flex flex-col items-center justify-center py-10 text-center">
-          <div className="mb-4 flex h-12 w-12 items-center justify-center rounded-xl bg-slate-100">
-            <Receipt className="h-6 w-6 text-slate-500" />
-          </div>
-          <p className="text-base font-medium text-slate-900">
-            No transactions yet
-          </p>
-          <p className="mt-2 text-sm text-slate-500">
-            Add your first expense or income to see it here.
-          </p>
-        </CardContent>
-      </Card>
+              <Button
+                onClick={() => navigate("/add-transaction")}
+                className="hidden md:inline-flex rounded-full bg-black text-white hover:bg-black/90"
+              >
+                <Plus className="mr-2 h-4 w-4" />
+                Add Transaction
+              </Button>
+            </div>
+          </CardHeader>
+          <CardContent className="flex flex-col items-center justify-center py-10 text-center">
+            <div className="mb-4 flex h-12 w-12 items-center justify-center rounded-xl bg-slate-100">
+              <Receipt className="h-6 w-6 text-slate-500" />
+            </div>
+            <p className="text-base font-medium text-slate-900">
+              No transactions yet
+            </p>
+            <p className="mt-2 text-sm text-slate-500">
+              Add your first expense or income to see it here.
+            </p>
+          </CardContent>
+        </Card>
+      </div>
     );
   }
 
   return (
     <div>
+      <TransactionSummary />
       <div className="mb-4 flex items-center justify-between gap-3">
         <h2 className="text-xl font-semibold text-slate-900">
           Recent Transactions
