@@ -139,10 +139,48 @@ export const getTransactionById = async (req, res) => {
     return res.status(500).json({ message: "Server error" });
   }
 };
+
+export const getSummary = async (req, res) => {
+  try {
+    const userId = req.user && (req.user._id || req.user.id);
+
+    if (!userId) {
+      return res.status(401).json({ message: "Not authorized" });
+    }
+
+    const summary = await Transaction.aggregate([
+      { $match: { user: userId } },
+      {
+        $group: {
+          _id: "$type",
+          totalAmount: { $sum: "$amount" },
+        },
+      },
+    ]);
+
+    const result = summary.reduce(
+      (acc, item) => {
+        if (item._id === "income") {
+          acc.income = item.totalAmount;
+        } else if (item._id === "expense") {
+          acc.expense = item.totalAmount;
+        }
+        return acc;
+      },
+      { income: 0, expense: 0 },
+    );
+    result.balance = result.income - result.expense;
+    return res.status(200).json({ summary: result });
+  } catch (error) {
+    console.error("Error fetching summary:", error);
+    return res.status(500).json({ message: "Server error" });
+  }
+};
 export default {
   createTransaction,
   getTransactions,
   deleteTransaction,
   updateTransaction,
   getTransactionById,
+  getSummary,
 };

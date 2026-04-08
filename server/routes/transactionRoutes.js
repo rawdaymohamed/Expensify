@@ -2,6 +2,7 @@ import express from "express";
 import {
   createTransaction,
   deleteTransaction,
+  getSummary,
   getTransactionById,
   getTransactions,
   updateTransaction,
@@ -15,6 +16,8 @@ const router = express.Router();
 
 // Get all transactions for authenticated user (protected)
 router.get("/", requireAuth, getTransactions);
+
+router.get("/summary", requireAuth, getSummary);
 
 // Create a transaction (protected)
 router.post(
