@@ -20,6 +20,16 @@
 
 https://itsexpensify.vercel.app/
 
+## Screenshots
+
+![Login](./docs/login.png)
+![Register](./docs/register.png)
+![Add Transaction Mobile](./docs/add-transaction-mobile.png)
+![home Mobile](./docs/home-mobile.png)
+![Dashboard](./docs/home-dashboard.png)
+![Empty Dashboard](./docs/home.png)
+![Add Transaction](./docs/add-transaction.png)
+
 ## 🚀 Getting Started
 
 To get a local copy up and running, follow these simple steps.
