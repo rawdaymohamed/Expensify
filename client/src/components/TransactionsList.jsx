@@ -60,8 +60,8 @@ const TransactionItem = ({ transaction, onDelete, isDeleting }) => {
   const isExpense = transaction.type === "expense";
 
   return (
-    <Card className="border border-slate-200 shadow-sm">
-      <CardContent className="p-4">
+    <Card className="border border-slate-200 shadow-sm hover:shadow-md transition">
+      <CardContent className="px-4">
         <div className="flex items-start justify-between gap-4">
           {/* LEFT */}
           <div className="min-w-0 flex-1">
