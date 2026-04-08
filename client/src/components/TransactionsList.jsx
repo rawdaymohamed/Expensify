@@ -58,7 +58,7 @@ const PaginationControls = ({ page, pages, onPageChange }) => {
 
 const TransactionItem = ({ transaction, onDelete, isDeleting }) => {
   const isExpense = transaction.type === "expense";
-
+  const navigate = useNavigate();
   return (
     <Card className="border border-slate-200 shadow-sm hover:shadow-md transition">
       <CardContent className="px-4">
@@ -104,6 +104,14 @@ const TransactionItem = ({ transaction, onDelete, isDeleting }) => {
               className="text-slate-500 hover:text-red-600"
             >
               <Trash2 className="h-5 w-5" />
+            </Button>
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => navigate(`/update-transaction/${transaction._id}`)}
+              className="gap-2 rounded-xl border-slate-200"
+            >
+              Edit
             </Button>
           </div>
         </div>

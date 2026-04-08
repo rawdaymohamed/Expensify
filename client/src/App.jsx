@@ -5,6 +5,7 @@ import Home from "./pages/Home";
 import ProtectedRoute from "./components/ProtectedRoute";
 import AddTransaction from "./pages/AddTransaction";
 import { Toaster } from "sonner";
+import UpdateTransaction from "./pages/UpdateTransaction";
 
 function App() {
   return (
@@ -23,6 +24,14 @@ function App() {
           element={
             <ProtectedRoute>
               <AddTransaction />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/update-transaction/:id"
+          element={
+            <ProtectedRoute>
+              <UpdateTransaction />
             </ProtectedRoute>
           }
         />

@@ -2,6 +2,7 @@ import express from "express";
 import {
   createTransaction,
   deleteTransaction,
+  getTransactionById,
   getTransactions,
   updateTransaction,
 } from "../controllers/transactionController.js";
@@ -30,4 +31,5 @@ router.put(
   validate(addTransactionSchema),
   updateTransaction,
 );
+router.get("/:id", requireAuth, validateId, getTransactionById);
 export default router;
