@@ -3,6 +3,7 @@ import {
   createTransaction,
   deleteTransaction,
   getTransactions,
+  updateTransaction,
 } from "../controllers/transactionController.js";
 import requireAuth from "../middleware/requireAuth.js";
 import validateId from "../middleware/validateId.js";
@@ -22,4 +23,11 @@ router.post(
   createTransaction,
 );
 router.delete("/:id", requireAuth, validateId, deleteTransaction);
+router.put(
+  "/:id",
+  requireAuth,
+  validateId,
+  validate(addTransactionSchema),
+  updateTransaction,
+);
 export default router;
