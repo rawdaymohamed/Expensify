@@ -62,9 +62,10 @@ const TransactionItem = ({ transaction, onDelete, isDeleting }) => {
   return (
     <Card className="border border-slate-200 shadow-sm">
       <CardContent className="p-4">
-        <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
+        <div className="flex items-start justify-between gap-4">
+          {/* LEFT */}
           <div className="min-w-0 flex-1">
-            <div className="flex flex-wrap items-center gap-2">
+            <div className="flex items-center gap-2">
               <h4 className="truncate text-base font-semibold text-slate-900">
                 {transaction.category}
               </h4>
@@ -78,32 +79,31 @@ const TransactionItem = ({ transaction, onDelete, isDeleting }) => {
             </p>
 
             {transaction.note ? (
-              <p className="mt-3 text-sm leading-6 text-slate-600">
-                {transaction.note}
-              </p>
+              <p className="mt-2 text-sm text-slate-600">{transaction.note}</p>
             ) : (
-              <p className="mt-3 text-sm italic text-slate-400">No note</p>
+              <p className="mt-2 text-sm italic text-slate-400">No note</p>
             )}
           </div>
 
-          <div className="shrink-0">
+          {/* RIGHT */}
+          <div className="flex flex-col items-end justify-between gap-3">
             <p
-              className={`text-lg font-bold ${
+              className={`text-lg font-semibold ${
                 isExpense ? "text-red-600" : "text-green-600"
               }`}
             >
               {isExpense ? "-" : "+"}
               {formatCurrency(transaction.amount)}
             </p>
+
             <Button
-              variant="outline"
-              size="sm"
+              variant="ghost"
+              size="large"
               onClick={() => onDelete(transaction._id)}
               disabled={isDeleting}
-              className="gap-2 rounded-xl border-slate-200"
+              className="text-slate-500 hover:text-red-600"
             >
-              <Trash2 className="h-4 w-4" />
-              {isDeleting ? "Deleting..." : "Delete"}
+              <Trash2 className="h-5 w-5" />
             </Button>
           </div>
         </div>
