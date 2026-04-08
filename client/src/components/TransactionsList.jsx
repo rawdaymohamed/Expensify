@@ -2,9 +2,13 @@ import React, { useState } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { Receipt, ArrowLeft, ArrowRight, Plus } from "lucide-react";
-import { useGetTransactionsQuery } from "@/features/api/transactionApi";
+import { Receipt, ArrowLeft, ArrowRight, Plus, Trash2 } from "lucide-react";
+import {
+  useDeleteTransactionMutation,
+  useGetTransactionsQuery,
+} from "@/features/api/transactionApi";
 import { useNavigate } from "react-router-dom";
+import { toast } from "sonner";
 
 const formatCurrency = (amount) => {
   return new Intl.NumberFormat("en-US", {
@@ -52,7 +56,7 @@ const PaginationControls = ({ page, pages, onPageChange }) => {
   );
 };
 
-const TransactionItem = ({ transaction }) => {
+const TransactionItem = ({ transaction, onDelete, isDeleting }) => {
   const isExpense = transaction.type === "expense";
 
   return (
@@ -91,6 +95,16 @@ const TransactionItem = ({ transaction }) => {
               {isExpense ? "-" : "+"}
               {formatCurrency(transaction.amount)}
             </p>
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => onDelete(transaction._id)}
+              disabled={isDeleting}
+              className="gap-2 rounded-xl border-slate-200"
+            >
+              <Trash2 className="h-4 w-4" />
+              {isDeleting ? "Deleting..." : "Delete"}
+            </Button>
           </div>
         </div>
       </CardContent>
@@ -109,7 +123,17 @@ const TransactionsList = () => {
 
   const transactions = data?.transactions || [];
   const pages = data?.pages || 1;
-
+  const [deleteTransaction, { isLoading: isDeleting }] =
+    useDeleteTransactionMutation();
+  const handleDelete = async (id) => {
+    try {
+      await deleteTransaction(id).unwrap();
+      toast.success("Transaction deleted successfully");
+    } catch (error) {
+      toast.error("Failed to delete transaction");
+      console.error("Failed to delete transaction:", error);
+    }
+  };
   if (isLoading) {
     return (
       <Card className="border-0 shadow-sm">
@@ -188,7 +212,12 @@ const TransactionsList = () => {
       </div>
       <div className="space-y-4">
         {transactions.map((transaction) => (
-          <TransactionItem key={transaction._id} transaction={transaction} />
+          <TransactionItem
+            key={transaction._id}
+            transaction={transaction}
+            onDelete={handleDelete}
+            isDeleting={isDeleting}
+          />
         ))}
       </div>
 

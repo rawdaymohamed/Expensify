@@ -32,8 +32,18 @@ export const transactionApi = createApi({
         `/transactions?page=${page}&limit=${limit}`,
       providesTags: ["Transaction"],
     }),
+    deleteTransaction: builder.mutation({
+      query: (id) => ({
+        url: `/transactions/${id}`,
+        method: "DELETE",
+      }),
+      invalidatesTags: ["Transaction"],
+    }),
   }),
 });
 
-export const { useCreateTransactionMutation, useGetTransactionsQuery } =
-  transactionApi;
+export const {
+  useCreateTransactionMutation,
+  useGetTransactionsQuery,
+  useDeleteTransactionMutation,
+} = transactionApi;
