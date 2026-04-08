@@ -2,7 +2,14 @@ import React, { useState } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { Receipt, ArrowLeft, ArrowRight, Plus, Trash2 } from "lucide-react";
+import {
+  Receipt,
+  ArrowLeft,
+  ArrowRight,
+  Plus,
+  Trash2,
+  Edit,
+} from "lucide-react";
 import {
   useDeleteTransactionMutation,
   useGetTransactionsQuery,
@@ -95,24 +102,27 @@ const TransactionItem = ({ transaction, onDelete, isDeleting }) => {
               {isExpense ? "-" : "+"}
               {formatCurrency(transaction.amount)}
             </p>
-
-            <Button
-              variant="ghost"
-              size="large"
-              onClick={() => onDelete(transaction._id)}
-              disabled={isDeleting}
-              className="text-slate-500 hover:text-red-600"
-            >
-              <Trash2 className="h-5 w-5" />
-            </Button>
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={() => navigate(`/update-transaction/${transaction._id}`)}
-              className="gap-2 rounded-xl border-slate-200"
-            >
-              Edit
-            </Button>
+            <div className="flex items-center gap-2">
+              <Button
+                variant="ghost"
+                size="large"
+                onClick={() => onDelete(transaction._id)}
+                disabled={isDeleting}
+                className="text-slate-500 hover:text-red-600"
+              >
+                <Trash2 className="h-5 w-5" />
+              </Button>
+              <Button
+                variant="ghost"
+                size="large"
+                onClick={() =>
+                  navigate(`/update-transaction/${transaction._id}`)
+                }
+                className="text-slate-500 hover:text-blue-600"
+              >
+                <Edit className="h-4 w-4" />
+              </Button>
+            </div>
           </div>
         </div>
       </CardContent>
