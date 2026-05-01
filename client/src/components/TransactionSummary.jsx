@@ -1,5 +1,11 @@
 import React from "react";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { DollarSign, ArrowUp, ArrowDown } from "lucide-react";
 import { useGetSummaryQuery } from "@/features/api/transactionApi";
@@ -11,15 +17,41 @@ const formatCurrency = (amount) => {
   }).format(Number(amount) || 0);
 };
 
-const Stat = ({ icon, label, value, variant = "default" }) => (
-  <div className="flex items-center justify-between gap-3 p-4 rounded-lg bg-white shadow-sm">
-    <div className="flex items-center gap-3">
-      <div className="rounded-md bg-slate-100 p-2 text-slate-700">{icon}</div>
-      <div>
-        <div className="mt-1 text-lg font-semibold text-slate-900">{value}</div>
+const statBadgeStyles = {
+  Income: "border-green-200 bg-green-50 text-green-700",
+  Expense: "border-red-200 bg-red-50 text-red-700",
+};
+
+const BalanceStat = ({ value }) => (
+  <div className="border-b border-slate-100 pb-5 sm:col-span-2">
+    <div className="flex items-start justify-between gap-4">
+      <div className="min-w-0">
+        <div className="flex items-center gap-2 text-sm font-medium text-slate-500">
+          <DollarSign className="h-4 w-4 text-slate-700" />
+          <span>Balance</span>
+        </div>
+        <div className="mt-3 text-4xl font-bold tracking-tight text-slate-950 sm:text-5xl">
+          {value}
+        </div>
+        <p className="mt-2 text-sm text-slate-500">All-time totals</p>
       </div>
     </div>
-    <Badge variant={variant}>{label}</Badge>
+  </div>
+);
+
+const SecondaryStat = ({ icon, label, value }) => (
+  <div className="flex items-center justify-between gap-3 rounded-lg border border-slate-100 bg-white px-4 py-3">
+    <div>
+      <div className="flex items-center gap-2 text-sm font-medium text-slate-500">
+        {icon}
+        <span>{label}</span>
+      </div>
+      <div className="mt-2 text-xl font-semibold text-slate-900">{value}</div>
+      <p className="mt-1 text-xs text-slate-400">All-time totals</p>
+    </div>
+    <Badge variant="outline" className={statBadgeStyles[label]}>
+      {label}
+    </Badge>
   </div>
 );
 
@@ -32,6 +64,7 @@ const TransactionSummary = () => {
     <Card className="mb-4">
       <CardHeader>
         <CardTitle className="text-lg">Overview</CardTitle>
+        <CardDescription>All-time totals from your transactions.</CardDescription>
       </CardHeader>
       <CardContent>
         {isLoading ? (
@@ -43,26 +76,19 @@ const TransactionSummary = () => {
         ) : isError ? (
           <div className="text-sm text-red-500">Failed to load summary</div>
         ) : (
-          <div className="grid grid-cols-1 gap-3 sm:grid-cols-3">
-            <Stat
+          <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
+            <BalanceStat value={formatCurrency(summary.balance)} />
+
+            <SecondaryStat
               icon={<ArrowUp className="h-5 w-5 text-green-600" />}
               label="Income"
               value={formatCurrency(summary.income)}
-              variant="default"
             />
 
-            <Stat
+            <SecondaryStat
               icon={<ArrowDown className="h-5 w-5 text-red-600" />}
               label="Expense"
               value={formatCurrency(summary.expense)}
-              variant="destructive"
-            />
-
-            <Stat
-              icon={<DollarSign className="h-5 w-5 text-slate-700" />}
-              label="Balance"
-              value={formatCurrency(summary.balance)}
-              variant="default"
             />
           </div>
         )}

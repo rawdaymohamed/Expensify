@@ -1,8 +1,7 @@
 import React from "react";
 import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent } from "@/components/ui/card";
-import { ArrowRight, LogOut, Plus, Sparkles, Wallet } from "lucide-react";
+import { LogOut, Plus, Wallet } from "lucide-react";
 import TransactionsList from "@/components/TransactionsList";
 
 const Home = () => {
@@ -40,6 +39,16 @@ const Home = () => {
             <span className="hidden sm:inline">Logout</span>
           </Button>
         </header>
+
+        <section className="mb-5">
+          <p className="text-sm font-medium text-slate-500">Dashboard</p>
+          <h2 className="mt-1 text-3xl font-bold tracking-tight text-slate-950">
+            Your money at a glance
+          </h2>
+          <p className="mt-2 max-w-2xl text-sm text-slate-500">
+            Review your all-time balance, income, expenses, and recent activity.
+          </p>
+        </section>
 
         {/* Transactions */}
         <section id="recent-transactions" className="pb-24">

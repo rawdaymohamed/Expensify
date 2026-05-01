@@ -29,6 +29,11 @@ const formatDate = (date) => {
   return new Date(date).toLocaleDateString();
 };
 
+const typeBadgeStyles = {
+  income: "border-green-200 bg-green-50 text-green-700",
+  expense: "border-red-200 bg-red-50 text-red-700",
+};
+
 const PaginationControls = ({ page, pages, onPageChange }) => {
   if (!pages || pages <= 1) return null;
 
@@ -73,30 +78,35 @@ const TransactionItem = ({ transaction, onDelete, isDeleting }) => {
         <div className="flex items-start justify-between gap-4">
           {/* LEFT */}
           <div className="min-w-0 flex-1">
-            <div className="flex items-center gap-2">
-              <h4 className="truncate text-base font-semibold text-slate-900">
+            <div className="flex flex-wrap items-center gap-2">
+              <h4 className="truncate text-lg font-semibold leading-tight text-slate-950">
                 {transaction.category}
               </h4>
-              <Badge variant={isExpense ? "destructive" : "default"}>
+              <Badge
+                variant="outline"
+                className={`capitalize ${typeBadgeStyles[transaction.type]}`}
+              >
                 {transaction.type}
               </Badge>
             </div>
 
-            <p className="mt-1 text-sm text-slate-500">
+            <p className="mt-1 text-xs font-medium uppercase tracking-wide text-slate-400">
               {formatDate(transaction.date)}
             </p>
 
             {transaction.note ? (
-              <p className="mt-2 text-sm text-slate-600">{transaction.note}</p>
+              <p className="mt-2 line-clamp-2 text-sm leading-6 text-slate-500">
+                {transaction.note}
+              </p>
             ) : (
               <p className="mt-2 text-sm italic text-slate-400">No note</p>
             )}
           </div>
 
           {/* RIGHT */}
-          <div className="flex flex-col items-end justify-between gap-3">
+          <div className="flex shrink-0 flex-col items-end justify-between gap-3">
             <p
-              className={`text-lg font-semibold ${
+              className={`text-xl font-bold leading-tight ${
                 isExpense ? "text-red-600" : "text-green-600"
               }`}
             >
