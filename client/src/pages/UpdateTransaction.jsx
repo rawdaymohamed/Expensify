@@ -26,6 +26,12 @@ import {
 const UpdateTransaction = () => {
   const { id } = useParams();
   const navigate = useNavigate();
+  const amountErrorId = "edit-amount-error";
+  const typeErrorId = "edit-type-error";
+  const categoryErrorId = "edit-category-error";
+  const dateErrorId = "edit-date-error";
+  const noteErrorId = "edit-note-error";
+  const formErrorId = "edit-transaction-error";
 
   const {
     data,
@@ -164,10 +170,14 @@ const UpdateTransaction = () => {
                   step="0.01"
                   inputMode="decimal"
                   placeholder="0.00"
+                  aria-invalid={Boolean(errors.amount)}
+                  aria-describedby={
+                    errors.amount ? amountErrorId : undefined
+                  }
                   {...register("amount")}
                 />
                 {errors.amount && (
-                  <p className="text-sm text-red-500">
+                  <p id={amountErrorId} className="text-sm text-red-500">
                     {errors.amount.message}
                   </p>
                 )}
@@ -177,14 +187,18 @@ const UpdateTransaction = () => {
                 <Label htmlFor="type">Type</Label>
                 <select
                   id="type"
-                  className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm"
+                  className="flex h-8 w-full rounded-lg border border-input bg-background px-2.5 py-1 text-sm outline-none transition-colors focus-visible:border-ring focus-visible:ring-3 focus-visible:ring-ring/50"
+                  aria-invalid={Boolean(errors.type)}
+                  aria-describedby={errors.type ? typeErrorId : undefined}
                   {...register("type")}
                 >
                   <option value="expense">Expense</option>
                   <option value="income">Income</option>
                 </select>
                 {errors.type && (
-                  <p className="text-sm text-red-500">{errors.type.message}</p>
+                  <p id={typeErrorId} className="text-sm text-red-500">
+                    {errors.type.message}
+                  </p>
                 )}
               </div>
 
@@ -194,10 +208,14 @@ const UpdateTransaction = () => {
                   id="category"
                   type="text"
                   placeholder="Food, Salary, Transport..."
+                  aria-invalid={Boolean(errors.category)}
+                  aria-describedby={
+                    errors.category ? categoryErrorId : undefined
+                  }
                   {...register("category")}
                 />
                 {errors.category && (
-                  <p className="text-sm text-red-500">
+                  <p id={categoryErrorId} className="text-sm text-red-500">
                     {errors.category.message}
                   </p>
                 )}
@@ -206,11 +224,19 @@ const UpdateTransaction = () => {
               <div className="space-y-2">
                 <Label htmlFor="date">Date</Label>
                 <div className="relative">
-                  <Input id="date" type="date" {...register("date")} />
+                  <Input
+                    id="date"
+                    type="date"
+                    aria-invalid={Boolean(errors.date)}
+                    aria-describedby={errors.date ? dateErrorId : undefined}
+                    {...register("date")}
+                  />
                   <CalendarIcon className="pointer-events-none absolute right-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
                 </div>
                 {errors.date && (
-                  <p className="text-sm text-red-500">{errors.date.message}</p>
+                  <p id={dateErrorId} className="text-sm text-red-500">
+                    {errors.date.message}
+                  </p>
                 )}
               </div>
 
@@ -220,20 +246,29 @@ const UpdateTransaction = () => {
                   id="note"
                   placeholder="Optional note"
                   rows={4}
+                  aria-invalid={Boolean(errors.note)}
+                  aria-describedby={errors.note ? noteErrorId : undefined}
                   {...register("note")}
                 />
                 {errors.note && (
-                  <p className="text-sm text-red-500">{errors.note.message}</p>
+                  <p id={noteErrorId} className="text-sm text-red-500">
+                    {errors.note.message}
+                  </p>
                 )}
               </div>
 
               {updateError && (
-                <p className="text-sm text-red-500">
+                <p id={formErrorId} className="text-sm text-red-500">
                   {updateError?.data?.message || "Something went wrong"}
                 </p>
               )}
 
-              <Button type="submit" className="w-full" disabled={isUpdating}>
+              <Button
+                type="submit"
+                className="w-full"
+                disabled={isUpdating}
+                aria-describedby={updateError ? formErrorId : undefined}
+              >
                 {isUpdating ? "Updating..." : "Update Transaction"}
               </Button>
             </form>

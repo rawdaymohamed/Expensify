@@ -9,6 +9,8 @@ import {
   Plus,
   Trash2,
   Edit,
+  TrendingDown,
+  TrendingUp,
 } from "lucide-react";
 import {
   useDeleteTransactionMutation,
@@ -32,6 +34,21 @@ const formatDate = (date) => {
 const typeBadgeStyles = {
   income: "border-green-200 bg-green-50 text-green-700",
   expense: "border-red-200 bg-red-50 text-red-700",
+};
+
+const typeMeta = {
+  income: {
+    Icon: TrendingUp,
+    label: "Income",
+    amountClass: "text-green-600",
+    sign: "+",
+  },
+  expense: {
+    Icon: TrendingDown,
+    label: "Expense",
+    amountClass: "text-red-600",
+    sign: "-",
+  },
 };
 
 const PaginationControls = ({ page, pages, onPageChange }) => {
@@ -92,10 +109,11 @@ const TransactionListSkeleton = () => (
 );
 
 const TransactionItem = ({ transaction, onDelete, isDeleting }) => {
-  const isExpense = transaction.type === "expense";
+  const meta = typeMeta[transaction.type] || typeMeta.expense;
+  const TypeIcon = meta.Icon;
   const navigate = useNavigate();
   return (
-    <Card className="border border-slate-200 shadow-sm hover:shadow-md transition">
+    <Card className="border border-slate-200 shadow-sm transition hover:shadow-md">
       <CardContent className="px-4">
         <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
           {/* LEFT */}
@@ -108,7 +126,8 @@ const TransactionItem = ({ transaction, onDelete, isDeleting }) => {
                 variant="outline"
                 className={`capitalize ${typeBadgeStyles[transaction.type]}`}
               >
-                {transaction.type}
+                <TypeIcon className="h-3 w-3" aria-hidden="true" />
+                {meta.label}
               </Badge>
             </div>
 
@@ -117,7 +136,7 @@ const TransactionItem = ({ transaction, onDelete, isDeleting }) => {
             </p>
 
             {transaction.note ? (
-              <p className="mt-2 line-clamp-2 text-sm leading-6 text-slate-500">
+              <p className="mt-2 line-clamp-2 break-words text-sm leading-6 text-slate-500">
                 {transaction.note}
               </p>
             ) : (
@@ -128,20 +147,21 @@ const TransactionItem = ({ transaction, onDelete, isDeleting }) => {
           {/* RIGHT */}
           <div className="flex shrink-0 flex-row items-center justify-between gap-3 border-t border-slate-100 pt-3 sm:flex-col sm:items-end sm:border-t-0 sm:pt-0">
             <p
-              className={`text-xl font-bold leading-tight sm:text-right ${
-                isExpense ? "text-red-600" : "text-green-600"
-              }`}
+              className={`text-xl font-bold leading-tight sm:text-right ${meta.amountClass}`}
+              aria-label={`${meta.label} amount ${formatCurrency(
+                transaction.amount,
+              )}`}
             >
-              {isExpense ? "-" : "+"}
+              {meta.sign}
               {formatCurrency(transaction.amount)}
             </p>
             <div className="flex items-center gap-1 rounded-lg bg-slate-50 p-1">
               <Button
                 variant="ghost"
                 size="sm"
-                onClick={() => onDelete(transaction._id)}
+                onClick={() => onDelete(transaction)}
                 disabled={isDeleting}
-                className="gap-1 text-slate-500 hover:text-red-600"
+                className="gap-1 rounded-md text-slate-500 hover:text-red-600 focus-visible:ring-red-200"
                 aria-label={`Delete ${transaction.category} transaction`}
               >
                 <Trash2 className="h-4 w-4" />
@@ -153,7 +173,7 @@ const TransactionItem = ({ transaction, onDelete, isDeleting }) => {
                 onClick={() =>
                   navigate(`/update-transaction/${transaction._id}`)
                 }
-                className="gap-1 text-slate-500 hover:text-blue-600"
+                className="gap-1 rounded-md text-slate-500 hover:text-blue-600 focus-visible:ring-blue-200"
                 aria-label={`Edit ${transaction.category} transaction`}
               >
                 <Edit className="h-4 w-4" />
@@ -181,9 +201,17 @@ const TransactionsList = () => {
   const pages = data?.pages || 1;
   const [deleteTransaction, { isLoading: isDeleting }] =
     useDeleteTransactionMutation();
-  const handleDelete = async (id) => {
+  const handleDelete = async (transaction) => {
+    const confirmed = window.confirm(
+      `Delete the ${transaction.category} transaction for ${formatCurrency(
+        transaction.amount,
+      )}?`,
+    );
+
+    if (!confirmed) return;
+
     try {
-      await deleteTransaction(id).unwrap();
+      await deleteTransaction(transaction._id).unwrap();
       toast.success("Transaction deleted successfully");
     } catch (error) {
       toast.error("Failed to delete transaction");
@@ -242,7 +270,7 @@ const TransactionsList = () => {
 
               <Button
                 onClick={() => navigate("/add-transaction")}
-                className="hidden md:inline-flex rounded-full bg-black text-white hover:bg-black/90"
+                className="hidden md:inline-flex rounded-lg bg-black text-white hover:bg-black/90"
               >
                 <Plus className="mr-2 h-4 w-4" />
                 Add Transaction
@@ -261,7 +289,7 @@ const TransactionsList = () => {
             </p>
             <Button
               onClick={() => navigate("/add-transaction")}
-              className="mt-5 rounded-full bg-black text-white hover:bg-black/90"
+              className="mt-5 rounded-lg bg-black text-white hover:bg-black/90"
             >
               <Plus className="mr-2 h-4 w-4" />
               Add Transaction
@@ -282,7 +310,7 @@ const TransactionsList = () => {
 
         <Button
           onClick={() => navigate("/add-transaction")}
-          className="hidden md:inline-flex rounded-full bg-black text-white hover:bg-black/90"
+          className="hidden md:inline-flex rounded-lg bg-black text-white hover:bg-black/90"
         >
           <Plus className="mr-2 h-4 w-4" />
           Add Transaction

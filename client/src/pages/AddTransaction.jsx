@@ -52,6 +52,12 @@ const getDefaultValues = () => ({
 
 const AddTransaction = () => {
   const saveAndAddAnotherRef = useRef(false);
+  const amountErrorId = "amount-error";
+  const typeErrorId = "type-error";
+  const categoryErrorId = "category-error";
+  const dateErrorId = "date-error";
+  const noteErrorId = "note-error";
+  const formErrorId = "add-transaction-error";
   const {
     register,
     handleSubmit,
@@ -138,11 +144,15 @@ const AddTransaction = () => {
                     placeholder="0.00"
                     autoFocus
                     className="h-11 pl-7 text-lg font-semibold"
+                    aria-invalid={Boolean(errors.amount)}
+                    aria-describedby={
+                      errors.amount ? amountErrorId : undefined
+                    }
                     {...register("amount")}
                   />
                 </div>
                 {errors.amount && (
-                  <p className="text-sm text-red-500">
+                  <p id={amountErrorId} className="text-sm text-red-500">
                     {errors.amount.message}
                   </p>
                 )}
@@ -155,6 +165,7 @@ const AddTransaction = () => {
                   className="grid grid-cols-2 rounded-lg border border-input bg-background p-1"
                   role="group"
                   aria-labelledby="type-label"
+                  aria-describedby={errors.type ? typeErrorId : undefined}
                 >
                   {["expense", "income"].map((type) => (
                     <Button
@@ -172,14 +183,16 @@ const AddTransaction = () => {
                         selectedType === type
                           ? typeButtonStyles[type].active
                           : typeButtonStyles[type].inactive
-                      }`}
+                      } focus-visible:ring-slate-300`}
                     >
                       {type}
                     </Button>
                   ))}
                 </div>
                 {errors.type && (
-                  <p className="text-sm text-red-500">{errors.type.message}</p>
+                  <p id={typeErrorId} className="text-sm text-red-500">
+                    {errors.type.message}
+                  </p>
                 )}
               </div>
 
@@ -189,6 +202,10 @@ const AddTransaction = () => {
                   id="category"
                   type="text"
                   placeholder="Food, Salary, Transport..."
+                  aria-invalid={Boolean(errors.category)}
+                  aria-describedby={
+                    errors.category ? categoryErrorId : undefined
+                  }
                   {...register("category")}
                 />
                 <div className="flex flex-wrap gap-2 pt-1">
@@ -207,13 +224,14 @@ const AddTransaction = () => {
                         })
                       }
                       aria-pressed={selectedCategory === category}
+                      className="rounded-lg focus-visible:ring-slate-300"
                     >
                       {category}
                     </Button>
                   ))}
                 </div>
                 {errors.category && (
-                  <p className="text-sm text-red-500">
+                  <p id={categoryErrorId} className="text-sm text-red-500">
                     {errors.category.message}
                   </p>
                 )}
@@ -222,11 +240,19 @@ const AddTransaction = () => {
               <div className="space-y-2">
                 <Label htmlFor="date">Date</Label>
                 <div className="relative">
-                  <Input id="date" type="date" {...register("date")} />
+                  <Input
+                    id="date"
+                    type="date"
+                    aria-invalid={Boolean(errors.date)}
+                    aria-describedby={errors.date ? dateErrorId : undefined}
+                    {...register("date")}
+                  />
                   <CalendarIcon className="pointer-events-none absolute right-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
                 </div>
                 {errors.date && (
-                  <p className="text-sm text-red-500">{errors.date.message}</p>
+                  <p id={dateErrorId} className="text-sm text-red-500">
+                    {errors.date.message}
+                  </p>
                 )}
               </div>
 
@@ -239,14 +265,18 @@ const AddTransaction = () => {
                   placeholder="Optional note"
                   rows={3}
                   className="bg-slate-50 text-sm"
+                  aria-invalid={Boolean(errors.note)}
+                  aria-describedby={errors.note ? noteErrorId : undefined}
                   {...register("note")}
                 />
                 {errors.note && (
-                  <p className="text-sm text-red-500">{errors.note.message}</p>
+                  <p id={noteErrorId} className="text-sm text-red-500">
+                    {errors.note.message}
+                  </p>
                 )}
               </div>
               {error && (
-                <p className="text-sm text-red-500">
+                <p id={formErrorId} className="text-sm text-red-500">
                   {error?.data?.message || "Something went wrong"}
                 </p>
               )}
@@ -255,6 +285,7 @@ const AddTransaction = () => {
                   type="submit"
                   className="w-full"
                   disabled={isLoading}
+                  aria-describedby={error ? formErrorId : undefined}
                   onClick={() => {
                     saveAndAddAnotherRef.current = false;
                   }}
@@ -266,6 +297,7 @@ const AddTransaction = () => {
                   variant="outline"
                   className="w-full"
                   disabled={isLoading}
+                  aria-describedby={error ? formErrorId : undefined}
                   onClick={() => {
                     saveAndAddAnotherRef.current = true;
                   }}
