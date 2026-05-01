@@ -23,6 +23,27 @@ import {
   useUpdateTransactionMutation,
 } from "@/features/api/transactionApi";
 
+const categoryOptions = [
+  "Food",
+  "Transport",
+  "Rent",
+  "Salary",
+  "Shopping",
+  "Bills",
+];
+
+const typeButtonStyles = {
+  expense: {
+    active: "bg-red-50 text-red-700 hover:bg-red-50 hover:text-red-700",
+    inactive: "text-slate-500 hover:text-slate-900",
+  },
+  income: {
+    active:
+      "bg-green-50 text-green-700 hover:bg-green-50 hover:text-green-700",
+    inactive: "text-slate-500 hover:text-slate-900",
+  },
+};
+
 const UpdateTransaction = () => {
   const { id } = useParams();
   const navigate = useNavigate();
@@ -48,6 +69,8 @@ const UpdateTransaction = () => {
     register,
     handleSubmit,
     reset,
+    setValue,
+    watch,
     formState: { errors },
   } = useForm({
     resolver: zodResolver(addTransactionSchema),
@@ -59,6 +82,9 @@ const UpdateTransaction = () => {
       note: "",
     },
   });
+
+  const selectedType = watch("type");
+  const selectedCategory = watch("category");
 
   React.useEffect(() => {
     if (data?.transaction) {
@@ -164,18 +190,25 @@ const UpdateTransaction = () => {
             <form onSubmit={handleSubmit(onSubmit)} className="space-y-5">
               <div className="space-y-2">
                 <Label htmlFor="amount">Amount</Label>
-                <Input
-                  id="amount"
-                  type="number"
-                  step="0.01"
-                  inputMode="decimal"
-                  placeholder="0.00"
-                  aria-invalid={Boolean(errors.amount)}
-                  aria-describedby={
-                    errors.amount ? amountErrorId : undefined
-                  }
-                  {...register("amount")}
-                />
+                <div className="relative">
+                  <span className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-sm font-medium text-slate-500">
+                    $
+                  </span>
+                  <Input
+                    id="amount"
+                    type="number"
+                    step="0.01"
+                    inputMode="decimal"
+                    placeholder="0.00"
+                    autoFocus
+                    className="h-11 pl-7 text-lg font-semibold"
+                    aria-invalid={Boolean(errors.amount)}
+                    aria-describedby={
+                      errors.amount ? amountErrorId : undefined
+                    }
+                    {...register("amount")}
+                  />
+                </div>
                 {errors.amount && (
                   <p id={amountErrorId} className="text-sm text-red-500">
                     {errors.amount.message}
@@ -184,17 +217,36 @@ const UpdateTransaction = () => {
               </div>
 
               <div className="space-y-2">
-                <Label htmlFor="type">Type</Label>
-                <select
-                  id="type"
-                  className="flex h-8 w-full rounded-lg border border-input bg-background px-2.5 py-1 text-sm outline-none transition-colors focus-visible:border-ring focus-visible:ring-3 focus-visible:ring-ring/50"
-                  aria-invalid={Boolean(errors.type)}
+                <Label id="edit-type-label">Type</Label>
+                <input type="hidden" {...register("type")} />
+                <div
+                  className="grid grid-cols-2 rounded-lg border border-input bg-background p-1"
+                  role="group"
+                  aria-labelledby="edit-type-label"
                   aria-describedby={errors.type ? typeErrorId : undefined}
-                  {...register("type")}
                 >
-                  <option value="expense">Expense</option>
-                  <option value="income">Income</option>
-                </select>
+                  {["expense", "income"].map((type) => (
+                    <Button
+                      key={type}
+                      type="button"
+                      variant="ghost"
+                      onClick={() =>
+                        setValue("type", type, {
+                          shouldDirty: true,
+                          shouldValidate: true,
+                        })
+                      }
+                      aria-pressed={selectedType === type}
+                      className={`capitalize ${
+                        selectedType === type
+                          ? typeButtonStyles[type].active
+                          : typeButtonStyles[type].inactive
+                      } focus-visible:ring-slate-300`}
+                    >
+                      {type}
+                    </Button>
+                  ))}
+                </div>
                 {errors.type && (
                   <p id={typeErrorId} className="text-sm text-red-500">
                     {errors.type.message}
@@ -214,6 +266,28 @@ const UpdateTransaction = () => {
                   }
                   {...register("category")}
                 />
+                <div className="flex flex-wrap gap-2 pt-1">
+                  {categoryOptions.map((category) => (
+                    <Button
+                      key={category}
+                      type="button"
+                      variant={
+                        selectedCategory === category ? "secondary" : "outline"
+                      }
+                      size="sm"
+                      onClick={() =>
+                        setValue("category", category, {
+                          shouldDirty: true,
+                          shouldValidate: true,
+                        })
+                      }
+                      aria-pressed={selectedCategory === category}
+                      className="rounded-lg focus-visible:ring-slate-300"
+                    >
+                      {category}
+                    </Button>
+                  ))}
+                </div>
                 {errors.category && (
                   <p id={categoryErrorId} className="text-sm text-red-500">
                     {errors.category.message}
@@ -240,12 +314,15 @@ const UpdateTransaction = () => {
                 )}
               </div>
 
-              <div className="space-y-2">
-                <Label htmlFor="note">Note</Label>
+              <div className="space-y-2 pt-1">
+                <Label htmlFor="note" className="text-slate-500">
+                  Note <span className="font-normal">(optional)</span>
+                </Label>
                 <Textarea
                   id="note"
                   placeholder="Optional note"
-                  rows={4}
+                  rows={3}
+                  className="bg-slate-50 text-sm"
                   aria-invalid={Boolean(errors.note)}
                   aria-describedby={errors.note ? noteErrorId : undefined}
                   {...register("note")}
