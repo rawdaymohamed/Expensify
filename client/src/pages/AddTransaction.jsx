@@ -97,7 +97,7 @@ const AddTransaction = () => {
     }
   };
   return (
-    <main className="min-h-screen bg-muted/30 px-4 py-6 flex flex-col justify-center">
+    <main className="min-h-screen bg-muted/30 px-4 py-6 sm:py-10">
       <div className="mx-auto w-full max-w-md">
         <div className="mb-4">
           <Button

@@ -32,6 +32,7 @@ const UpdateTransaction = () => {
     isLoading: isFetching,
     isError,
     error: fetchError,
+    refetch,
   } = useGetTransactionByIdQuery(id);
 
   const [updateTransaction, { isLoading: isUpdating, error: updateError }] =
@@ -84,11 +85,18 @@ const UpdateTransaction = () => {
 
   if (isFetching) {
     return (
-      <main className="min-h-screen bg-muted/30 px-4 py-6 flex flex-col justify-center">
+      <main className="min-h-screen bg-muted/30 px-4 py-6 sm:py-10">
         <div className="mx-auto w-full max-w-md">
           <Card className="border-none shadow-sm sm:border sm:shadow-md">
-            <CardContent className="py-10">
-              <p className="text-sm text-slate-500">Loading transaction...</p>
+            <CardHeader className="space-y-1">
+              <div className="h-7 w-40 animate-pulse rounded bg-slate-100" />
+              <div className="h-4 w-56 animate-pulse rounded bg-slate-100" />
+            </CardHeader>
+            <CardContent className="space-y-5">
+              <div className="h-11 w-full animate-pulse rounded-lg bg-slate-100" />
+              <div className="h-10 w-full animate-pulse rounded-lg bg-slate-100" />
+              <div className="h-10 w-full animate-pulse rounded-lg bg-slate-100" />
+              <div className="h-24 w-full animate-pulse rounded-lg bg-slate-100" />
             </CardContent>
           </Card>
         </div>
@@ -98,7 +106,7 @@ const UpdateTransaction = () => {
 
   if (isError) {
     return (
-      <main className="min-h-screen bg-muted/30 px-4 py-6 flex flex-col justify-center">
+      <main className="min-h-screen bg-muted/30 px-4 py-6 sm:py-10">
         <div className="mx-auto w-full max-w-md">
           <Button
             variant="ghost"
@@ -110,10 +118,13 @@ const UpdateTransaction = () => {
           </Button>
 
           <Card className="border-none shadow-sm sm:border sm:shadow-md">
-            <CardContent className="py-10">
+            <CardContent className="flex flex-col items-start gap-3 py-10">
               <p className="text-sm text-red-500">
                 {fetchError?.data?.message || "Failed to load transaction"}
               </p>
+              <Button variant="outline" size="sm" onClick={refetch}>
+                Retry
+              </Button>
             </CardContent>
           </Card>
         </div>
@@ -122,7 +133,7 @@ const UpdateTransaction = () => {
   }
 
   return (
-    <main className="min-h-screen bg-muted/30 px-4 py-6 flex flex-col justify-center">
+    <main className="min-h-screen bg-muted/30 px-4 py-6 sm:py-10">
       <div className="mx-auto w-full max-w-md">
         <div className="mb-4">
           <Button

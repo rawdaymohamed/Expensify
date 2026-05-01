@@ -7,6 +7,7 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
 import { DollarSign, ArrowUp, ArrowDown } from "lucide-react";
 import { useGetSummaryQuery } from "@/features/api/transactionApi";
 
@@ -56,7 +57,7 @@ const SecondaryStat = ({ icon, label, value }) => (
 );
 
 const TransactionSummary = () => {
-  const { data, isLoading, isError } = useGetSummaryQuery();
+  const { data, isLoading, isError, refetch } = useGetSummaryQuery();
 
   const summary = data?.summary || { income: 0, expense: 0, balance: 0 };
 
@@ -74,7 +75,12 @@ const TransactionSummary = () => {
             <div className="h-20 w-full animate-pulse rounded-lg bg-slate-100" />
           </div>
         ) : isError ? (
-          <div className="text-sm text-red-500">Failed to load summary</div>
+          <div className="flex flex-col items-start gap-3">
+            <div className="text-sm text-red-500">Failed to load summary</div>
+            <Button variant="outline" size="sm" onClick={refetch}>
+              Retry
+            </Button>
+          </div>
         ) : (
           <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
             <BalanceStat value={formatCurrency(summary.balance)} />

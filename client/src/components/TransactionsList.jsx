@@ -69,13 +69,35 @@ const PaginationControls = ({ page, pages, onPageChange }) => {
   );
 };
 
+const TransactionListSkeleton = () => (
+  <div className="space-y-4">
+    {Array.from({ length: 3 }).map((_, index) => (
+      <Card key={index} className="border border-slate-200 shadow-sm">
+        <CardContent className="px-4">
+          <div className="flex animate-pulse flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
+            <div className="min-w-0 flex-1">
+              <div className="flex items-center gap-2">
+                <div className="h-5 w-32 rounded bg-slate-100" />
+                <div className="h-5 w-16 rounded-full bg-slate-100" />
+              </div>
+              <div className="mt-3 h-3 w-24 rounded bg-slate-100" />
+              <div className="mt-4 h-4 w-full max-w-sm rounded bg-slate-100" />
+            </div>
+            <div className="h-6 w-28 rounded bg-slate-100 sm:ml-4" />
+          </div>
+        </CardContent>
+      </Card>
+    ))}
+  </div>
+);
+
 const TransactionItem = ({ transaction, onDelete, isDeleting }) => {
   const isExpense = transaction.type === "expense";
   const navigate = useNavigate();
   return (
     <Card className="border border-slate-200 shadow-sm hover:shadow-md transition">
       <CardContent className="px-4">
-        <div className="flex items-start justify-between gap-4">
+        <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
           {/* LEFT */}
           <div className="min-w-0 flex-1">
             <div className="flex flex-wrap items-center gap-2">
@@ -104,34 +126,38 @@ const TransactionItem = ({ transaction, onDelete, isDeleting }) => {
           </div>
 
           {/* RIGHT */}
-          <div className="flex shrink-0 flex-col items-end justify-between gap-3">
+          <div className="flex shrink-0 flex-row items-center justify-between gap-3 border-t border-slate-100 pt-3 sm:flex-col sm:items-end sm:border-t-0 sm:pt-0">
             <p
-              className={`text-xl font-bold leading-tight ${
+              className={`text-xl font-bold leading-tight sm:text-right ${
                 isExpense ? "text-red-600" : "text-green-600"
               }`}
             >
               {isExpense ? "-" : "+"}
               {formatCurrency(transaction.amount)}
             </p>
-            <div className="flex items-center gap-2">
+            <div className="flex items-center gap-1 rounded-lg bg-slate-50 p-1">
               <Button
                 variant="ghost"
-                size="large"
+                size="sm"
                 onClick={() => onDelete(transaction._id)}
                 disabled={isDeleting}
-                className="text-slate-500 hover:text-red-600"
+                className="gap-1 text-slate-500 hover:text-red-600"
+                aria-label={`Delete ${transaction.category} transaction`}
               >
-                <Trash2 className="h-5 w-5" />
+                <Trash2 className="h-4 w-4" />
+                <span className="hidden sm:inline">Delete</span>
               </Button>
               <Button
                 variant="ghost"
-                size="large"
+                size="sm"
                 onClick={() =>
                   navigate(`/update-transaction/${transaction._id}`)
                 }
-                className="text-slate-500 hover:text-blue-600"
+                className="gap-1 text-slate-500 hover:text-blue-600"
+                aria-label={`Edit ${transaction.category} transaction`}
               >
                 <Edit className="h-4 w-4" />
+                <span className="hidden sm:inline">Edit</span>
               </Button>
             </div>
           </div>
@@ -145,10 +171,11 @@ const TransactionsList = () => {
   const navigate = useNavigate();
   const [page, setPage] = useState(1);
   const limit = 6;
-  const { data, isLoading, isError, error } = useGetTransactionsQuery({
-    page,
-    limit,
-  });
+  const { data, isLoading, isError, error, refetch } =
+    useGetTransactionsQuery({
+      page,
+      limit,
+    });
 
   const transactions = data?.transactions || [];
   const pages = data?.pages || 1;
@@ -172,7 +199,7 @@ const TransactionsList = () => {
             <CardTitle className="text-xl">Recent Transactions</CardTitle>
           </CardHeader>
           <CardContent>
-            <p className="text-sm text-slate-500">Loading transactions...</p>
+            <TransactionListSkeleton />
           </CardContent>
         </Card>
       </div>
@@ -188,9 +215,14 @@ const TransactionsList = () => {
             <CardTitle className="text-xl">Recent Transactions</CardTitle>
           </CardHeader>
           <CardContent>
-            <p className="text-sm text-red-500">
-              {error?.data?.message || "Failed to load transactions."}
-            </p>
+            <div className="flex flex-col items-start gap-3">
+              <p className="text-sm text-red-500">
+                {error?.data?.message || "Failed to load transactions."}
+              </p>
+              <Button variant="outline" size="sm" onClick={refetch}>
+                Retry
+              </Button>
+            </div>
           </CardContent>
         </Card>
       </div>
@@ -227,6 +259,13 @@ const TransactionsList = () => {
             <p className="mt-2 text-sm text-slate-500">
               Add your first expense or income to see it here.
             </p>
+            <Button
+              onClick={() => navigate("/add-transaction")}
+              className="mt-5 rounded-full bg-black text-white hover:bg-black/90"
+            >
+              <Plus className="mr-2 h-4 w-4" />
+              Add Transaction
+            </Button>
           </CardContent>
         </Card>
       </div>
