@@ -9,6 +9,9 @@ import {
   Plus,
   Trash2,
   Edit,
+  TrendingDown,
+  TrendingUp,
+  AlertTriangle,
 } from "lucide-react";
 import {
   useDeleteTransactionMutation,
@@ -27,6 +30,26 @@ const formatCurrency = (amount) => {
 
 const formatDate = (date) => {
   return new Date(date).toLocaleDateString();
+};
+
+const typeBadgeStyles = {
+  income: "border-green-200 bg-green-50 text-green-700",
+  expense: "border-red-200 bg-red-50 text-red-700",
+};
+
+const typeMeta = {
+  income: {
+    Icon: TrendingUp,
+    label: "Income",
+    amountClass: "text-green-600",
+    sign: "+",
+  },
+  expense: {
+    Icon: TrendingDown,
+    label: "Expense",
+    amountClass: "text-red-600",
+    sign: "-",
+  },
 };
 
 const PaginationControls = ({ page, pages, onPageChange }) => {
@@ -64,64 +87,186 @@ const PaginationControls = ({ page, pages, onPageChange }) => {
   );
 };
 
+const TransactionListSkeleton = () => (
+  <div className="space-y-4">
+    {Array.from({ length: 3 }).map((_, index) => (
+      <Card key={index} className="border border-slate-200 shadow-sm">
+        <CardContent className="px-4">
+          <div className="flex animate-pulse flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
+            <div className="min-w-0 flex-1">
+              <div className="flex items-center gap-2">
+                <div className="h-5 w-32 rounded bg-slate-100" />
+                <div className="h-5 w-16 rounded-full bg-slate-100" />
+              </div>
+              <div className="mt-3 h-3 w-24 rounded bg-slate-100" />
+              <div className="mt-4 h-4 w-full max-w-sm rounded bg-slate-100" />
+            </div>
+            <div className="h-6 w-28 rounded bg-slate-100 sm:ml-4" />
+          </div>
+        </CardContent>
+      </Card>
+    ))}
+  </div>
+);
+
+const DeleteConfirmationModal = ({
+  transaction,
+  isDeleting,
+  onCancel,
+  onConfirm,
+}) => {
+  React.useEffect(() => {
+    if (!transaction) return;
+
+    const handleKeyDown = (event) => {
+      if (event.key === "Escape") {
+        onCancel();
+      }
+    };
+
+    document.addEventListener("keydown", handleKeyDown);
+    return () => document.removeEventListener("keydown", handleKeyDown);
+  }, [onCancel, transaction]);
+
+  if (!transaction) return null;
+
+  const meta = typeMeta[transaction.type] || typeMeta.expense;
+
+  return (
+    <div
+      className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 px-4"
+      role="presentation"
+      onMouseDown={onCancel}
+    >
+      <div
+        role="dialog"
+        aria-modal="true"
+        aria-labelledby="delete-transaction-title"
+        aria-describedby="delete-transaction-description"
+        className="w-full max-w-sm rounded-xl border border-slate-200 bg-white p-5 shadow-xl"
+        onMouseDown={(event) => event.stopPropagation()}
+      >
+        <div className="flex items-start gap-3">
+          <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-red-50 text-red-600">
+            <AlertTriangle className="h-5 w-5" aria-hidden="true" />
+          </div>
+          <div className="min-w-0">
+            <h3
+              id="delete-transaction-title"
+              className="text-lg font-semibold text-slate-950"
+            >
+              Delete transaction?
+            </h3>
+            <p
+              id="delete-transaction-description"
+              className="mt-2 text-sm leading-6 text-slate-500"
+            >
+              This will permanently delete the {transaction.category}{" "}
+              {meta.label.toLowerCase()} for{" "}
+              <span className="font-medium text-slate-700">
+                {formatCurrency(transaction.amount)}
+              </span>
+              .
+            </p>
+          </div>
+        </div>
+
+        <div className="mt-5 flex flex-col-reverse gap-2 sm:flex-row sm:justify-end">
+          <Button
+            type="button"
+            variant="outline"
+            onClick={onCancel}
+            disabled={isDeleting}
+            autoFocus
+          >
+            Cancel
+          </Button>
+          <Button
+            type="button"
+            variant="destructive"
+            onClick={onConfirm}
+            disabled={isDeleting}
+            className="gap-2"
+          >
+            <Trash2 className="h-4 w-4" />
+            {isDeleting ? "Deleting..." : "Delete"}
+          </Button>
+        </div>
+      </div>
+    </div>
+  );
+};
+
 const TransactionItem = ({ transaction, onDelete, isDeleting }) => {
-  const isExpense = transaction.type === "expense";
+  const meta = typeMeta[transaction.type] || typeMeta.expense;
+  const TypeIcon = meta.Icon;
   const navigate = useNavigate();
   return (
-    <Card className="border border-slate-200 shadow-sm hover:shadow-md transition">
+    <Card className="border border-slate-200 shadow-sm transition hover:shadow-md">
       <CardContent className="px-4">
-        <div className="flex items-start justify-between gap-4">
+        <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
           {/* LEFT */}
           <div className="min-w-0 flex-1">
-            <div className="flex items-center gap-2">
-              <h4 className="truncate text-base font-semibold text-slate-900">
+            <div className="flex flex-wrap items-center gap-2">
+              <h4 className="truncate text-lg font-semibold leading-tight text-slate-950">
                 {transaction.category}
               </h4>
-              <Badge variant={isExpense ? "destructive" : "default"}>
-                {transaction.type}
+              <Badge
+                variant="outline"
+                className={`capitalize ${typeBadgeStyles[transaction.type]}`}
+              >
+                <TypeIcon className="h-3 w-3" aria-hidden="true" />
+                {meta.label}
               </Badge>
             </div>
 
-            <p className="mt-1 text-sm text-slate-500">
+            <p className="mt-1 text-xs font-medium uppercase tracking-wide text-slate-400">
               {formatDate(transaction.date)}
             </p>
 
             {transaction.note ? (
-              <p className="mt-2 text-sm text-slate-600">{transaction.note}</p>
+              <p className="mt-2 line-clamp-2 break-words text-sm leading-6 text-slate-500">
+                {transaction.note}
+              </p>
             ) : (
               <p className="mt-2 text-sm italic text-slate-400">No note</p>
             )}
           </div>
 
           {/* RIGHT */}
-          <div className="flex flex-col items-end justify-between gap-3">
+          <div className="flex shrink-0 flex-row items-center justify-between gap-3 border-t border-slate-100 pt-3 sm:flex-col sm:items-end sm:border-t-0 sm:pt-0">
             <p
-              className={`text-lg font-semibold ${
-                isExpense ? "text-red-600" : "text-green-600"
-              }`}
+              className={`text-xl font-bold leading-tight sm:text-right ${meta.amountClass}`}
+              aria-label={`${meta.label} amount ${formatCurrency(
+                transaction.amount,
+              )}`}
             >
-              {isExpense ? "-" : "+"}
+              {meta.sign}
               {formatCurrency(transaction.amount)}
             </p>
-            <div className="flex items-center gap-2">
+            <div className="flex items-center gap-1 rounded-lg bg-slate-50 p-1">
               <Button
                 variant="ghost"
-                size="large"
-                onClick={() => onDelete(transaction._id)}
+                size="sm"
+                onClick={() => onDelete(transaction)}
                 disabled={isDeleting}
-                className="text-slate-500 hover:text-red-600"
+                className="gap-1 rounded-md text-slate-500 hover:text-red-600 focus-visible:ring-red-200"
+                aria-label={`Delete ${transaction.category} transaction`}
               >
-                <Trash2 className="h-5 w-5" />
+                <Trash2 className="h-4 w-4" />
+                <span className="hidden sm:inline">Delete</span>
               </Button>
               <Button
                 variant="ghost"
-                size="large"
+                size="sm"
                 onClick={() =>
                   navigate(`/update-transaction/${transaction._id}`)
                 }
-                className="text-slate-500 hover:text-blue-600"
+                className="gap-1 rounded-md text-slate-500 hover:text-blue-600 focus-visible:ring-blue-200"
+                aria-label={`Edit ${transaction.category} transaction`}
               >
                 <Edit className="h-4 w-4" />
+                <span className="hidden sm:inline">Edit</span>
               </Button>
             </div>
           </div>
@@ -134,20 +279,35 @@ const TransactionItem = ({ transaction, onDelete, isDeleting }) => {
 const TransactionsList = () => {
   const navigate = useNavigate();
   const [page, setPage] = useState(1);
+  const [transactionToDelete, setTransactionToDelete] = useState(null);
   const limit = 6;
-  const { data, isLoading, isError, error } = useGetTransactionsQuery({
-    page,
-    limit,
-  });
+  const { data, isLoading, isError, error, refetch } =
+    useGetTransactionsQuery({
+      page,
+      limit,
+    });
 
   const transactions = data?.transactions || [];
   const pages = data?.pages || 1;
   const [deleteTransaction, { isLoading: isDeleting }] =
     useDeleteTransactionMutation();
-  const handleDelete = async (id) => {
+  const handleRequestDelete = (transaction) => {
+    setTransactionToDelete(transaction);
+  };
+
+  const handleCancelDelete = React.useCallback(() => {
+    if (!isDeleting) {
+      setTransactionToDelete(null);
+    }
+  }, [isDeleting]);
+
+  const handleConfirmDelete = async () => {
+    if (!transactionToDelete) return;
+
     try {
-      await deleteTransaction(id).unwrap();
+      await deleteTransaction(transactionToDelete._id).unwrap();
       toast.success("Transaction deleted successfully");
+      setTransactionToDelete(null);
     } catch (error) {
       toast.error("Failed to delete transaction");
       console.error("Failed to delete transaction:", error);
@@ -162,7 +322,7 @@ const TransactionsList = () => {
             <CardTitle className="text-xl">Recent Transactions</CardTitle>
           </CardHeader>
           <CardContent>
-            <p className="text-sm text-slate-500">Loading transactions...</p>
+            <TransactionListSkeleton />
           </CardContent>
         </Card>
       </div>
@@ -178,9 +338,14 @@ const TransactionsList = () => {
             <CardTitle className="text-xl">Recent Transactions</CardTitle>
           </CardHeader>
           <CardContent>
-            <p className="text-sm text-red-500">
-              {error?.data?.message || "Failed to load transactions."}
-            </p>
+            <div className="flex flex-col items-start gap-3">
+              <p className="text-sm text-red-500">
+                {error?.data?.message || "Failed to load transactions."}
+              </p>
+              <Button variant="outline" size="sm" onClick={refetch}>
+                Retry
+              </Button>
+            </div>
           </CardContent>
         </Card>
       </div>
@@ -200,7 +365,7 @@ const TransactionsList = () => {
 
               <Button
                 onClick={() => navigate("/add-transaction")}
-                className="hidden md:inline-flex rounded-full bg-black text-white hover:bg-black/90"
+                className="hidden md:inline-flex rounded-lg bg-black text-white hover:bg-black/90"
               >
                 <Plus className="mr-2 h-4 w-4" />
                 Add Transaction
@@ -217,6 +382,13 @@ const TransactionsList = () => {
             <p className="mt-2 text-sm text-slate-500">
               Add your first expense or income to see it here.
             </p>
+            <Button
+              onClick={() => navigate("/add-transaction")}
+              className="mt-5 rounded-lg bg-black text-white hover:bg-black/90"
+            >
+              <Plus className="mr-2 h-4 w-4" />
+              Add Transaction
+            </Button>
           </CardContent>
         </Card>
       </div>
@@ -233,7 +405,7 @@ const TransactionsList = () => {
 
         <Button
           onClick={() => navigate("/add-transaction")}
-          className="hidden md:inline-flex rounded-full bg-black text-white hover:bg-black/90"
+          className="hidden md:inline-flex rounded-lg bg-black text-white hover:bg-black/90"
         >
           <Plus className="mr-2 h-4 w-4" />
           Add Transaction
@@ -244,13 +416,19 @@ const TransactionsList = () => {
           <TransactionItem
             key={transaction._id}
             transaction={transaction}
-            onDelete={handleDelete}
+            onDelete={handleRequestDelete}
             isDeleting={isDeleting}
           />
         ))}
       </div>
 
       <PaginationControls page={page} pages={pages} onPageChange={setPage} />
+      <DeleteConfirmationModal
+        transaction={transactionToDelete}
+        isDeleting={isDeleting}
+        onCancel={handleCancelDelete}
+        onConfirm={handleConfirmDelete}
+      />
     </div>
   );
 };
