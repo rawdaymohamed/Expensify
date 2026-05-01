@@ -11,6 +11,7 @@ import {
   Edit,
   TrendingDown,
   TrendingUp,
+  AlertTriangle,
 } from "lucide-react";
 import {
   useDeleteTransactionMutation,
@@ -108,6 +109,94 @@ const TransactionListSkeleton = () => (
   </div>
 );
 
+const DeleteConfirmationModal = ({
+  transaction,
+  isDeleting,
+  onCancel,
+  onConfirm,
+}) => {
+  React.useEffect(() => {
+    if (!transaction) return;
+
+    const handleKeyDown = (event) => {
+      if (event.key === "Escape") {
+        onCancel();
+      }
+    };
+
+    document.addEventListener("keydown", handleKeyDown);
+    return () => document.removeEventListener("keydown", handleKeyDown);
+  }, [onCancel, transaction]);
+
+  if (!transaction) return null;
+
+  const meta = typeMeta[transaction.type] || typeMeta.expense;
+
+  return (
+    <div
+      className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 px-4"
+      role="presentation"
+      onMouseDown={onCancel}
+    >
+      <div
+        role="dialog"
+        aria-modal="true"
+        aria-labelledby="delete-transaction-title"
+        aria-describedby="delete-transaction-description"
+        className="w-full max-w-sm rounded-xl border border-slate-200 bg-white p-5 shadow-xl"
+        onMouseDown={(event) => event.stopPropagation()}
+      >
+        <div className="flex items-start gap-3">
+          <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-red-50 text-red-600">
+            <AlertTriangle className="h-5 w-5" aria-hidden="true" />
+          </div>
+          <div className="min-w-0">
+            <h3
+              id="delete-transaction-title"
+              className="text-lg font-semibold text-slate-950"
+            >
+              Delete transaction?
+            </h3>
+            <p
+              id="delete-transaction-description"
+              className="mt-2 text-sm leading-6 text-slate-500"
+            >
+              This will permanently delete the {transaction.category}{" "}
+              {meta.label.toLowerCase()} for{" "}
+              <span className="font-medium text-slate-700">
+                {formatCurrency(transaction.amount)}
+              </span>
+              .
+            </p>
+          </div>
+        </div>
+
+        <div className="mt-5 flex flex-col-reverse gap-2 sm:flex-row sm:justify-end">
+          <Button
+            type="button"
+            variant="outline"
+            onClick={onCancel}
+            disabled={isDeleting}
+            autoFocus
+          >
+            Cancel
+          </Button>
+          <Button
+            type="button"
+            variant="destructive"
+            onClick={onConfirm}
+            disabled={isDeleting}
+            className="gap-2"
+          >
+            <Trash2 className="h-4 w-4" />
+            {isDeleting ? "Deleting..." : "Delete"}
+          </Button>
+        </div>
+      </div>
+    </div>
+  );
+};
+
 const TransactionItem = ({ transaction, onDelete, isDeleting }) => {
   const meta = typeMeta[transaction.type] || typeMeta.expense;
   const TypeIcon = meta.Icon;
@@ -190,6 +279,7 @@ const TransactionItem = ({ transaction, onDelete, isDeleting }) => {
 const TransactionsList = () => {
   const navigate = useNavigate();
   const [page, setPage] = useState(1);
+  const [transactionToDelete, setTransactionToDelete] = useState(null);
   const limit = 6;
   const { data, isLoading, isError, error, refetch } =
     useGetTransactionsQuery({
@@ -201,18 +291,23 @@ const TransactionsList = () => {
   const pages = data?.pages || 1;
   const [deleteTransaction, { isLoading: isDeleting }] =
     useDeleteTransactionMutation();
-  const handleDelete = async (transaction) => {
-    const confirmed = window.confirm(
-      `Delete the ${transaction.category} transaction for ${formatCurrency(
-        transaction.amount,
-      )}?`,
-    );
+  const handleRequestDelete = (transaction) => {
+    setTransactionToDelete(transaction);
+  };
 
-    if (!confirmed) return;
+  const handleCancelDelete = React.useCallback(() => {
+    if (!isDeleting) {
+      setTransactionToDelete(null);
+    }
+  }, [isDeleting]);
+
+  const handleConfirmDelete = async () => {
+    if (!transactionToDelete) return;
 
     try {
-      await deleteTransaction(transaction._id).unwrap();
+      await deleteTransaction(transactionToDelete._id).unwrap();
       toast.success("Transaction deleted successfully");
+      setTransactionToDelete(null);
     } catch (error) {
       toast.error("Failed to delete transaction");
       console.error("Failed to delete transaction:", error);
@@ -321,13 +416,19 @@ const TransactionsList = () => {
           <TransactionItem
             key={transaction._id}
             transaction={transaction}
-            onDelete={handleDelete}
+            onDelete={handleRequestDelete}
             isDeleting={isDeleting}
           />
         ))}
       </div>
 
       <PaginationControls page={page} pages={pages} onPageChange={setPage} />
+      <DeleteConfirmationModal
+        transaction={transactionToDelete}
+        isDeleting={isDeleting}
+        onCancel={handleCancelDelete}
+        onConfirm={handleConfirmDelete}
+      />
     </div>
   );
 };
