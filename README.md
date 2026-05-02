@@ -23,18 +23,21 @@ https://itsexpensify.vercel.app/
 ## Screenshots
 
 <p align="center">
-<img src="./docs/login.png" alt="Login">
+<img src="./docs/login_v2.png" alt="Login">
 <br/>
-<img src="./docs/register.png" alt="Register">
+<img src="./docs/register_v2.png" alt="Register">
 <br/>
-<img src="./docs/add-transaction-mobile.png" alt="Add Transaction Mobile">
+<img src="./docs/add-transaction_v2.png" alt="Add Transaction Mobile">
 <br/>
-<img src="./docs/home-mobile.png" alt="Home Mobile">
+<img src="./docs/update_transaction.png" alt="Dashboard">
 <br/>
-<img src="./docs/home-dashboard.png" alt="Dashboard">
-<br/><img src="./docs/home.png" alt="Empty Dashboard">
-<br/><img src="./docs/add-transaction.png" alt="Add Transaction">
-
+<img src="./docs/dashboard_empty1.png" alt="Dashboard Empty 1">
+<br/>
+<img src="./docs/dashboard_empty2.png" alt="Dashboard Empty">
+<br/>
+<img src="./docs/dashboard_v2.png" alt="Dashboard">
+<br/><img src="./docs/dashboard2_v2.png" alt="Dashboard">
+</p>
 </p>
 
 ## 🚀 Getting Started
