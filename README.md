@@ -20,6 +20,10 @@
 
 https://itsexpensify.vercel.app/
 
+## 🎥 Demo Video
+
+[![Watch the demo](https://img.youtube.com/vi/vIg80WxaRLs/0.jpg)](https://youtu.be/vIg80WxaRLs)
+
 ## Screenshots
 
 <p align="center">
