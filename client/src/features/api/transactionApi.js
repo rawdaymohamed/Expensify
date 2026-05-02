@@ -28,12 +28,45 @@ export const transactionApi = createApi({
     }),
 
     getTransactions: builder.query({
-      query: ({ page = 1, limit = 6 } = {}) =>
-        `/transactions?page=${page}&limit=${limit}`,
+      query: ({ page = 1, limit = 6, startDate, endDate, q, type } = {}) => {
+        const params = new URLSearchParams({
+          page: String(page),
+          limit: String(limit),
+        });
+
+        if (startDate) params.set("startDate", startDate);
+        if (endDate) params.set("endDate", endDate);
+        if (q) params.set("q", q);
+        if (type) params.set("type", type);
+
+        return `/transactions?${params.toString()}`;
+      },
       providesTags: ["Transaction"],
     }),
     getSummary: builder.query({
-      query: () => `/transactions/summary`,
+      query: ({ startDate, endDate } = {}) => {
+        const params = new URLSearchParams();
+
+        if (startDate) params.set("startDate", startDate);
+        if (endDate) params.set("endDate", endDate);
+
+        const queryString = params.toString();
+        return `/transactions/summary${queryString ? `?${queryString}` : ""}`;
+      },
+      providesTags: ["Transaction"],
+    }),
+    getCategoryBreakdown: builder.query({
+      query: ({ startDate, endDate } = {}) => {
+        const params = new URLSearchParams();
+
+        if (startDate) params.set("startDate", startDate);
+        if (endDate) params.set("endDate", endDate);
+
+        const queryString = params.toString();
+        return `/transactions/category-breakdown${
+          queryString ? `?${queryString}` : ""
+        }`;
+      },
       providesTags: ["Transaction"],
     }),
     deleteTransaction: builder.mutation({
@@ -60,6 +93,7 @@ export const transactionApi = createApi({
 
 export const {
   useCreateTransactionMutation,
+  useGetCategoryBreakdownQuery,
   useGetTransactionsQuery,
   useGetSummaryQuery,
   useDeleteTransactionMutation,

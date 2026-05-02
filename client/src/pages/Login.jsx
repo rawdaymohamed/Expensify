@@ -2,23 +2,22 @@ import { Link, useNavigate } from "react-router-dom";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useEffect } from "react";
+import { Loader2 } from "lucide-react";
 
-import {
-  Card,
-  CardContent,
-  CardHeader,
-  CardTitle,
-  CardDescription,
-} from "@/components/ui/card";
+import AuthLayout from "@/components/AuthLayout";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import PasswordField from "@/components/PasswordField";
 
 import { useLoginMutation } from "../features/api/authApi";
 import { loginSchema } from "../validations/authSchema";
 
 const Login = () => {
   const navigate = useNavigate();
+  const emailErrorId = "login-email-error";
+  const passwordErrorId = "login-password-error";
+  const formErrorId = "login-form-error";
 
   useEffect(() => {
     const token =
@@ -56,77 +55,83 @@ const Login = () => {
     }
   };
 
+  const footer = (
+    <p className="text-center text-sm text-muted-foreground">
+      New here?{" "}
+      <Link
+        to="/register"
+        className="font-medium text-foreground underline underline-offset-4"
+      >
+        Create an account
+      </Link>
+    </p>
+  );
+
   return (
-    <main className="min-h-screen bg-muted/40">
-      <div className="container mx-auto flex min-h-screen items-center justify-center px-4 py-10">
-        <Card className="w-full max-w-md shadow-lg">
-          <CardHeader className="space-y-2 text-center">
-            <CardTitle className="text-2xl font-bold">Sign in</CardTitle>
-            <CardDescription>
-              Welcome back — sign in to continue
-            </CardDescription>
-          </CardHeader>
-
-          <CardContent>
-            <form
-              onSubmit={handleSubmit(onSubmit)}
-              className="space-y-5"
-              noValidate
-            >
-              <div className="space-y-2">
-                <Label htmlFor="email">Email address</Label>
-                <Input
-                  id="email"
-                  type="email"
-                  placeholder="Enter your email"
-                  autoComplete="email"
-                  {...register("email")}
-                />
-                {errors.email && (
-                  <p className="text-sm text-red-500">{errors.email.message}</p>
-                )}
-              </div>
-
-              <div className="space-y-2">
-                <Label htmlFor="password">Password</Label>
-                <Input
-                  id="password"
-                  type="password"
-                  placeholder="Your password"
-                  autoComplete="current-password"
-                  {...register("password")}
-                />
-                {errors.password && (
-                  <p className="text-sm text-red-500">
-                    {errors.password.message}
-                  </p>
-                )}
-              </div>
-
-              {error && (
-                <p className="text-sm text-red-500">
-                  {error?.data?.message || "Something went wrong"}
-                </p>
-              )}
-
-              <Button type="submit" className="w-full" disabled={isLoading}>
-                {isLoading ? "Signing in..." : "Sign in"}
-              </Button>
-            </form>
-
-            <p className="mt-6 text-center text-sm text-muted-foreground">
-              New here?{" "}
-              <Link
-                to="/register"
-                className="font-medium text-foreground underline underline-offset-4"
-              >
-                Create an account
-              </Link>
+    <AuthLayout
+      title="Sign in"
+      description="Welcome back. Sign in to continue tracking your money."
+      footer={footer}
+    >
+      <form onSubmit={handleSubmit(onSubmit)} className="space-y-6" noValidate>
+        <div className="space-y-2.5">
+          <Label htmlFor="email">Email address</Label>
+          <Input
+            id="email"
+            type="email"
+            placeholder="you@example.com"
+            autoComplete="email"
+            className="h-11"
+            aria-invalid={Boolean(errors.email)}
+            aria-describedby={errors.email ? emailErrorId : undefined}
+            {...register("email")}
+          />
+          {errors.email && (
+            <p id={emailErrorId} className="text-sm text-red-500">
+              {errors.email.message}
             </p>
-          </CardContent>
-        </Card>
-      </div>
-    </main>
+          )}
+        </div>
+
+        <div className="space-y-2.5">
+          <Label htmlFor="password">Password</Label>
+          <PasswordField
+            id="password"
+            placeholder="Enter your password"
+            autoComplete="current-password"
+            hasError={Boolean(errors.password)}
+            describedBy={errors.password ? passwordErrorId : undefined}
+            toggleLabel="password"
+            {...register("password")}
+          />
+          {errors.password && (
+            <p id={passwordErrorId} className="text-sm text-red-500">
+              {errors.password.message}
+            </p>
+          )}
+        </div>
+
+        {error && (
+          <div
+            id={formErrorId}
+            className="rounded-lg border border-red-200 bg-red-50 px-3 py-2 text-sm text-red-700"
+            role="alert"
+          >
+            {error?.data?.message || "We could not sign you in. Try again."}
+          </div>
+        )}
+
+        <Button
+          type="submit"
+          className="h-11 w-full"
+          disabled={isLoading}
+          aria-describedby={error ? formErrorId : undefined}
+        >
+          {isLoading && <Loader2 className="h-4 w-4 animate-spin" />}
+          <span>{isLoading ? "Signing in..." : "Sign in"}</span>
+        </Button>
+      </form>
+    </AuthLayout>
   );
 };
 

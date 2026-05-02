@@ -23,7 +23,7 @@ const statBadgeStyles = {
   Expense: "border-red-200 bg-red-50 text-red-700",
 };
 
-const BalanceStat = ({ value }) => (
+const BalanceStat = ({ value, periodLabel }) => (
   <div className="border-b border-slate-100 pb-5 sm:col-span-2">
     <div className="flex items-start justify-between gap-4">
       <div className="min-w-0">
@@ -34,13 +34,13 @@ const BalanceStat = ({ value }) => (
         <div className="mt-3 text-4xl font-bold tracking-tight text-slate-950 sm:text-5xl">
           {value}
         </div>
-        <p className="mt-2 text-sm text-slate-500">All-time totals</p>
+        <p className="mt-2 text-sm text-slate-500">{periodLabel} totals</p>
       </div>
     </div>
   </div>
 );
 
-const SecondaryStat = ({ icon, label, value }) => (
+const SecondaryStat = ({ icon, label, value, periodLabel }) => (
   <div className="flex items-center justify-between gap-3 rounded-lg border border-slate-100 bg-white px-4 py-3">
     <div>
       <div className="flex items-center gap-2 text-sm font-medium text-slate-500">
@@ -48,7 +48,7 @@ const SecondaryStat = ({ icon, label, value }) => (
         <span>{label}</span>
       </div>
       <div className="mt-2 text-xl font-semibold text-slate-900">{value}</div>
-      <p className="mt-1 text-xs text-slate-400">All-time totals</p>
+      <p className="mt-1 text-xs text-slate-400">{periodLabel} totals</p>
     </div>
     <Badge variant="outline" className={statBadgeStyles[label]}>
       {label}
@@ -56,8 +56,8 @@ const SecondaryStat = ({ icon, label, value }) => (
   </div>
 );
 
-const TransactionSummary = () => {
-  const { data, isLoading, isError, refetch } = useGetSummaryQuery();
+const TransactionSummary = ({ filters, periodLabel = "All-time" }) => {
+  const { data, isLoading, isError, refetch } = useGetSummaryQuery(filters);
 
   const summary = data?.summary || { income: 0, expense: 0, balance: 0 };
 
@@ -65,7 +65,9 @@ const TransactionSummary = () => {
     <Card className="mb-4">
       <CardHeader>
         <CardTitle className="text-lg">Overview</CardTitle>
-        <CardDescription>All-time totals from your transactions.</CardDescription>
+        <CardDescription>
+          {periodLabel} totals from your transactions.
+        </CardDescription>
       </CardHeader>
       <CardContent>
         {isLoading ? (
@@ -83,18 +85,23 @@ const TransactionSummary = () => {
           </div>
         ) : (
           <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
-            <BalanceStat value={formatCurrency(summary.balance)} />
+            <BalanceStat
+              value={formatCurrency(summary.balance)}
+              periodLabel={periodLabel}
+            />
 
             <SecondaryStat
               icon={<ArrowUp className="h-5 w-5 text-green-600" />}
               label="Income"
               value={formatCurrency(summary.income)}
+              periodLabel={periodLabel}
             />
 
             <SecondaryStat
               icon={<ArrowDown className="h-5 w-5 text-red-600" />}
               label="Expense"
               value={formatCurrency(summary.expense)}
+              periodLabel={periodLabel}
             />
           </div>
         )}

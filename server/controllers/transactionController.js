@@ -1,5 +1,28 @@
 import Transaction from "../models/Transaction.js";
 
+const buildDateFilter = ({ startDate, endDate }) => {
+  const dateFilter = {};
+
+  if (startDate) {
+    const start = new Date(startDate);
+    if (!Number.isNaN(start.getTime())) {
+      dateFilter.$gte = start;
+    }
+  }
+
+  if (endDate) {
+    const end = new Date(endDate);
+    if (!Number.isNaN(end.getTime())) {
+      end.setHours(23, 59, 59, 999);
+      dateFilter.$lte = end;
+    }
+  }
+
+  return Object.keys(dateFilter).length ? dateFilter : null;
+};
+
+const escapeRegex = (value) => value.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+
 export const createTransaction = async (req, res) => {
   try {
     // req.body has been validated and sanitized by validate middleware
@@ -42,6 +65,21 @@ export const getTransactions = async (req, res) => {
     const limit = Math.min(50, Number(req.query.limit) || 10);
 
     const query = { user: userId };
+    const dateFilter = buildDateFilter(req.query);
+
+    if (dateFilter) {
+      query.date = dateFilter;
+    }
+
+    if (["income", "expense"].includes(req.query.type)) {
+      query.type = req.query.type;
+    }
+
+    if (req.query.q && req.query.q.trim()) {
+      const searchRegex = new RegExp(escapeRegex(req.query.q.trim()), "i");
+
+      query.$or = [{ category: searchRegex }, { note: searchRegex }];
+    }
 
     const [transactions, total] = await Promise.all([
       Transaction.find(query)
@@ -148,8 +186,15 @@ export const getSummary = async (req, res) => {
       return res.status(401).json({ message: "Not authorized" });
     }
 
+    const match = { user: userId };
+    const dateFilter = buildDateFilter(req.query);
+
+    if (dateFilter) {
+      match.date = dateFilter;
+    }
+
     const summary = await Transaction.aggregate([
-      { $match: { user: userId } },
+      { $match: match },
       {
         $group: {
           _id: "$type",
@@ -176,6 +221,52 @@ export const getSummary = async (req, res) => {
     return res.status(500).json({ message: "Server error" });
   }
 };
+
+export const getCategoryBreakdown = async (req, res) => {
+  try {
+    const userId = req.user && (req.user._id || req.user.id);
+
+    if (!userId) {
+      return res.status(401).json({ message: "Not authorized" });
+    }
+
+    const match = { user: userId, type: "expense" };
+    const dateFilter = buildDateFilter(req.query);
+
+    if (dateFilter) {
+      match.date = dateFilter;
+    }
+
+    const breakdown = await Transaction.aggregate([
+      { $match: match },
+      {
+        $group: {
+          _id: "$category",
+          totalAmount: { $sum: "$amount" },
+        },
+      },
+      { $sort: { totalAmount: -1 } },
+      {
+        $project: {
+          _id: 0,
+          category: "$_id",
+          totalAmount: 1,
+        },
+      },
+    ]);
+
+    const totalExpense = breakdown.reduce(
+      (total, item) => total + item.totalAmount,
+      0,
+    );
+
+    return res.status(200).json({ breakdown, totalExpense });
+  } catch (error) {
+    console.error("Error fetching category breakdown:", error);
+    return res.status(500).json({ message: "Server error" });
+  }
+};
+
 export default {
   createTransaction,
   getTransactions,
@@ -183,4 +274,5 @@ export default {
   updateTransaction,
   getTransactionById,
   getSummary,
+  getCategoryBreakdown,
 };
