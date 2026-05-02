@@ -21,6 +21,8 @@ const buildDateFilter = ({ startDate, endDate }) => {
   return Object.keys(dateFilter).length ? dateFilter : null;
 };
 
+const escapeRegex = (value) => value.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+
 export const createTransaction = async (req, res) => {
   try {
     // req.body has been validated and sanitized by validate middleware
@@ -67,6 +69,16 @@ export const getTransactions = async (req, res) => {
 
     if (dateFilter) {
       query.date = dateFilter;
+    }
+
+    if (["income", "expense"].includes(req.query.type)) {
+      query.type = req.query.type;
+    }
+
+    if (req.query.q && req.query.q.trim()) {
+      const searchRegex = new RegExp(escapeRegex(req.query.q.trim()), "i");
+
+      query.$or = [{ category: searchRegex }, { note: searchRegex }];
     }
 
     const [transactions, total] = await Promise.all([

@@ -12,11 +12,13 @@ import {
   TrendingDown,
   TrendingUp,
   AlertTriangle,
+  Search,
 } from "lucide-react";
 import {
   useDeleteTransactionMutation,
   useGetTransactionsQuery,
 } from "@/features/api/transactionApi";
+import { Input } from "@/components/ui/input";
 import { useNavigate } from "react-router-dom";
 import { toast } from "sonner";
 import CategoryBreakdown from "@/components/CategoryBreakdown";
@@ -104,6 +106,12 @@ const periodOptions = [
   { value: "lastMonth", label: "Last month" },
 ];
 
+const typeFilterOptions = [
+  { value: "all", label: "All" },
+  { value: "income", label: "Income" },
+  { value: "expense", label: "Expense" },
+];
+
 const PeriodFilter = ({ selectedPeriod, onPeriodChange }) => (
   <div className="mb-4 flex flex-wrap gap-2">
     {periodOptions.map((option) => (
@@ -119,6 +127,50 @@ const PeriodFilter = ({ selectedPeriod, onPeriodChange }) => (
         {option.label}
       </Button>
     ))}
+  </div>
+);
+
+const TransactionFilters = ({
+  searchTerm,
+  selectedType,
+  onSearchChange,
+  onTypeChange,
+}) => (
+  <div className="mb-4 grid gap-3 sm:grid-cols-[1fr_auto] sm:items-center">
+    <div className="relative">
+      <Search className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-400" />
+      <Input
+        type="search"
+        value={searchTerm}
+        onChange={(event) => onSearchChange(event.target.value)}
+        placeholder="Search category or note"
+        className="h-9 pl-9"
+        aria-label="Search transactions by category or note"
+      />
+    </div>
+    <div
+      className="grid grid-cols-3 rounded-lg border border-input bg-background p-1"
+      role="group"
+      aria-label="Filter transactions by type"
+    >
+      {typeFilterOptions.map((option) => (
+        <Button
+          key={option.value}
+          type="button"
+          variant="ghost"
+          size="sm"
+          onClick={() => onTypeChange(option.value)}
+          aria-pressed={selectedType === option.value}
+          className={`rounded-md ${
+            selectedType === option.value
+              ? "bg-slate-100 text-slate-950 hover:bg-slate-100"
+              : "text-slate-500 hover:text-slate-900"
+          }`}
+        >
+          {option.label}
+        </Button>
+      ))}
+    </div>
   </div>
 );
 
@@ -351,7 +403,20 @@ const TransactionsList = () => {
   const [page, setPage] = useState(1);
   const [transactionToDelete, setTransactionToDelete] = useState(null);
   const [selectedPeriod, setSelectedPeriod] = useState("all");
+  const [searchTerm, setSearchTerm] = useState("");
+  const [debouncedSearchTerm, setDebouncedSearchTerm] = useState("");
+  const [selectedType, setSelectedType] = useState("all");
   const limit = 6;
+
+  React.useEffect(() => {
+    const timeoutId = window.setTimeout(() => {
+      setDebouncedSearchTerm(searchTerm.trim());
+      setPage(1);
+    }, 300);
+
+    return () => window.clearTimeout(timeoutId);
+  }, [searchTerm]);
+
   const periodRange = React.useMemo(
     () => getPeriodRange(selectedPeriod),
     [selectedPeriod],
@@ -368,18 +433,27 @@ const TransactionsList = () => {
       page,
       limit,
       ...filters,
+      q: debouncedSearchTerm || undefined,
+      type: selectedType === "all" ? undefined : selectedType,
     }),
-    [filters, page],
+    [debouncedSearchTerm, filters, page, selectedType],
   );
   const { data, isLoading, isError, error, refetch } =
     useGetTransactionsQuery(queryArgs);
 
   const transactions = data?.transactions || [];
   const pages = data?.pages || 1;
+  const hasActiveTransactionFilters =
+    Boolean(debouncedSearchTerm) || selectedType !== "all";
   const [deleteTransaction, { isLoading: isDeleting }] =
     useDeleteTransactionMutation();
   const handlePeriodChange = (period) => {
     setSelectedPeriod(period);
+    setPage(1);
+  };
+
+  const handleTypeChange = (type) => {
+    setSelectedType(type);
     setPage(1);
   };
 
@@ -419,6 +493,12 @@ const TransactionsList = () => {
             <CardTitle className="text-xl">Recent Transactions</CardTitle>
           </CardHeader>
           <CardContent>
+            <TransactionFilters
+              searchTerm={searchTerm}
+              selectedType={selectedType}
+              onSearchChange={setSearchTerm}
+              onTypeChange={handleTypeChange}
+            />
             <TransactionListSkeleton />
           </CardContent>
         </Card>
@@ -440,6 +520,12 @@ const TransactionsList = () => {
             <CardTitle className="text-xl">Recent Transactions</CardTitle>
           </CardHeader>
           <CardContent>
+            <TransactionFilters
+              searchTerm={searchTerm}
+              selectedType={selectedType}
+              onSearchChange={setSearchTerm}
+              onTypeChange={handleTypeChange}
+            />
             <div className="flex flex-col items-start gap-3">
               <p className="text-sm text-red-500">
                 {error?.data?.message || "Failed to load transactions."}
@@ -479,23 +565,37 @@ const TransactionsList = () => {
               </Button>
             </div>
           </CardHeader>
-          <CardContent className="flex flex-col items-center justify-center py-10 text-center">
-            <div className="mb-4 flex h-12 w-12 items-center justify-center rounded-xl bg-slate-100">
-              <Receipt className="h-6 w-6 text-slate-500" />
+          <CardContent>
+            <TransactionFilters
+              searchTerm={searchTerm}
+              selectedType={selectedType}
+              onSearchChange={setSearchTerm}
+              onTypeChange={handleTypeChange}
+            />
+            <div className="flex flex-col items-center justify-center py-10 text-center">
+              <div className="mb-4 flex h-12 w-12 items-center justify-center rounded-xl bg-slate-100">
+                <Receipt className="h-6 w-6 text-slate-500" />
+              </div>
+              <p className="text-base font-medium text-slate-900">
+                {hasActiveTransactionFilters
+                  ? "No matching transactions"
+                  : "No transactions yet"}
+              </p>
+              <p className="mt-2 text-sm text-slate-500">
+                {hasActiveTransactionFilters
+                  ? "Try changing your search, type filter, or date range."
+                  : `Add your first expense or income for ${periodRange.label.toLowerCase()}.`}
+              </p>
+              {!hasActiveTransactionFilters && (
+                <Button
+                  onClick={() => navigate("/add-transaction")}
+                  className="mt-5 rounded-lg bg-black text-white hover:bg-black/90"
+                >
+                  <Plus className="mr-2 h-4 w-4" />
+                  Add Transaction
+                </Button>
+              )}
             </div>
-            <p className="text-base font-medium text-slate-900">
-              No transactions yet
-            </p>
-            <p className="mt-2 text-sm text-slate-500">
-              Add your first expense or income for {periodRange.label.toLowerCase()}.
-            </p>
-            <Button
-              onClick={() => navigate("/add-transaction")}
-              className="mt-5 rounded-lg bg-black text-white hover:bg-black/90"
-            >
-              <Plus className="mr-2 h-4 w-4" />
-              Add Transaction
-            </Button>
           </CardContent>
         </Card>
       </div>
@@ -523,6 +623,12 @@ const TransactionsList = () => {
           Add Transaction
         </Button>
       </div>
+      <TransactionFilters
+        searchTerm={searchTerm}
+        selectedType={selectedType}
+        onSearchChange={setSearchTerm}
+        onTypeChange={handleTypeChange}
+      />
       <div className="space-y-4">
         {transactions.map((transaction) => (
           <TransactionItem

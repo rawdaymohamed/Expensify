@@ -28,7 +28,7 @@ export const transactionApi = createApi({
     }),
 
     getTransactions: builder.query({
-      query: ({ page = 1, limit = 6, startDate, endDate } = {}) => {
+      query: ({ page = 1, limit = 6, startDate, endDate, q, type } = {}) => {
         const params = new URLSearchParams({
           page: String(page),
           limit: String(limit),
@@ -36,6 +36,8 @@ export const transactionApi = createApi({
 
         if (startDate) params.set("startDate", startDate);
         if (endDate) params.set("endDate", endDate);
+        if (q) params.set("q", q);
+        if (type) params.set("type", type);
 
         return `/transactions?${params.toString()}`;
       },
