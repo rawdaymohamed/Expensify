@@ -19,6 +19,7 @@ import {
 } from "@/features/api/transactionApi";
 import { useNavigate } from "react-router-dom";
 import { toast } from "sonner";
+import CategoryBreakdown from "@/components/CategoryBreakdown";
 import TransactionSummary from "@/components/TransactionSummary";
 
 const formatCurrency = (amount) => {
@@ -412,6 +413,7 @@ const TransactionsList = () => {
           onPeriodChange={handlePeriodChange}
         />
         <TransactionSummary filters={filters} periodLabel={periodRange.label} />
+        <CategoryBreakdown filters={filters} periodLabel={periodRange.label} />
         <Card className="border-0 shadow-sm">
           <CardHeader>
             <CardTitle className="text-xl">Recent Transactions</CardTitle>
@@ -432,6 +434,7 @@ const TransactionsList = () => {
           onPeriodChange={handlePeriodChange}
         />
         <TransactionSummary filters={filters} periodLabel={periodRange.label} />
+        <CategoryBreakdown filters={filters} periodLabel={periodRange.label} />
         <Card className="border-0 shadow-sm">
           <CardHeader>
             <CardTitle className="text-xl">Recent Transactions</CardTitle>
@@ -459,6 +462,7 @@ const TransactionsList = () => {
           onPeriodChange={handlePeriodChange}
         />
         <TransactionSummary filters={filters} periodLabel={periodRange.label} />
+        <CategoryBreakdown filters={filters} periodLabel={periodRange.label} />
         <Card className="border-0 shadow-sm">
           <CardHeader>
             <div className="mb-4 flex items-center justify-between gap-3">
@@ -505,6 +509,7 @@ const TransactionsList = () => {
         onPeriodChange={handlePeriodChange}
       />
       <TransactionSummary filters={filters} periodLabel={periodRange.label} />
+      <CategoryBreakdown filters={filters} periodLabel={periodRange.label} />
       <div className="mb-4 flex items-center justify-between gap-3">
         <h2 className="text-xl font-semibold text-slate-900">
           Recent Transactions

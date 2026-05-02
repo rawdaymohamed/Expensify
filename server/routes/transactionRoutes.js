@@ -2,6 +2,7 @@ import express from "express";
 import {
   createTransaction,
   deleteTransaction,
+  getCategoryBreakdown,
   getSummary,
   getTransactionById,
   getTransactions,
@@ -18,6 +19,8 @@ const router = express.Router();
 router.get("/", requireAuth, getTransactions);
 
 router.get("/summary", requireAuth, getSummary);
+
+router.get("/category-breakdown", requireAuth, getCategoryBreakdown);
 
 // Create a transaction (protected)
 router.post(

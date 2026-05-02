@@ -209,6 +209,52 @@ export const getSummary = async (req, res) => {
     return res.status(500).json({ message: "Server error" });
   }
 };
+
+export const getCategoryBreakdown = async (req, res) => {
+  try {
+    const userId = req.user && (req.user._id || req.user.id);
+
+    if (!userId) {
+      return res.status(401).json({ message: "Not authorized" });
+    }
+
+    const match = { user: userId, type: "expense" };
+    const dateFilter = buildDateFilter(req.query);
+
+    if (dateFilter) {
+      match.date = dateFilter;
+    }
+
+    const breakdown = await Transaction.aggregate([
+      { $match: match },
+      {
+        $group: {
+          _id: "$category",
+          totalAmount: { $sum: "$amount" },
+        },
+      },
+      { $sort: { totalAmount: -1 } },
+      {
+        $project: {
+          _id: 0,
+          category: "$_id",
+          totalAmount: 1,
+        },
+      },
+    ]);
+
+    const totalExpense = breakdown.reduce(
+      (total, item) => total + item.totalAmount,
+      0,
+    );
+
+    return res.status(200).json({ breakdown, totalExpense });
+  } catch (error) {
+    console.error("Error fetching category breakdown:", error);
+    return res.status(500).json({ message: "Server error" });
+  }
+};
+
 export default {
   createTransaction,
   getTransactions,
@@ -216,4 +262,5 @@ export default {
   updateTransaction,
   getTransactionById,
   getSummary,
+  getCategoryBreakdown,
 };

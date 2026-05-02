@@ -53,6 +53,20 @@ export const transactionApi = createApi({
       },
       providesTags: ["Transaction"],
     }),
+    getCategoryBreakdown: builder.query({
+      query: ({ startDate, endDate } = {}) => {
+        const params = new URLSearchParams();
+
+        if (startDate) params.set("startDate", startDate);
+        if (endDate) params.set("endDate", endDate);
+
+        const queryString = params.toString();
+        return `/transactions/category-breakdown${
+          queryString ? `?${queryString}` : ""
+        }`;
+      },
+      providesTags: ["Transaction"],
+    }),
     deleteTransaction: builder.mutation({
       query: (id) => ({
         url: `/transactions/${id}`,
@@ -77,6 +91,7 @@ export const transactionApi = createApi({
 
 export const {
   useCreateTransactionMutation,
+  useGetCategoryBreakdownQuery,
   useGetTransactionsQuery,
   useGetSummaryQuery,
   useDeleteTransactionMutation,
