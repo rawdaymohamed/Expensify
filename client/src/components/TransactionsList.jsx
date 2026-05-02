@@ -52,6 +52,75 @@ const typeMeta = {
   },
 };
 
+const formatDateParam = (date) => date.toISOString().split("T")[0];
+
+const getPeriodRange = (period) => {
+  const today = new Date();
+  const startOfToday = new Date(
+    today.getFullYear(),
+    today.getMonth(),
+    today.getDate(),
+  );
+
+  if (period === "thisMonth") {
+    return {
+      startDate: formatDateParam(
+        new Date(today.getFullYear(), today.getMonth(), 1),
+      ),
+      endDate: formatDateParam(startOfToday),
+      label: "This month",
+    };
+  }
+
+  if (period === "lastMonth") {
+    return {
+      startDate: formatDateParam(
+        new Date(today.getFullYear(), today.getMonth() - 1, 1),
+      ),
+      endDate: formatDateParam(new Date(today.getFullYear(), today.getMonth(), 0)),
+      label: "Last month",
+    };
+  }
+
+  if (period === "last30") {
+    const startDate = new Date(startOfToday);
+    startDate.setDate(startDate.getDate() - 29);
+
+    return {
+      startDate: formatDateParam(startDate),
+      endDate: formatDateParam(startOfToday),
+      label: "Last 30 days",
+    };
+  }
+
+  return { label: "All-time" };
+};
+
+const periodOptions = [
+  { value: "all", label: "All-time" },
+  { value: "thisMonth", label: "This month" },
+  { value: "last30", label: "Last 30 days" },
+  { value: "lastMonth", label: "Last month" },
+];
+
+const PeriodFilter = ({ selectedPeriod, onPeriodChange }) => (
+  <div className="mb-4 flex flex-wrap gap-2">
+    {periodOptions.map((option) => (
+      <Button
+        key={option.value}
+        type="button"
+        variant={selectedPeriod === option.value ? "secondary" : "outline"}
+        size="sm"
+        onClick={() => onPeriodChange(option.value)}
+        aria-pressed={selectedPeriod === option.value}
+        className="rounded-lg"
+      >
+        {option.label}
+      </Button>
+    ))}
+  </div>
+);
+
 const PaginationControls = ({ page, pages, onPageChange }) => {
   if (!pages || pages <= 1) return null;
 
@@ -280,17 +349,39 @@ const TransactionsList = () => {
   const navigate = useNavigate();
   const [page, setPage] = useState(1);
   const [transactionToDelete, setTransactionToDelete] = useState(null);
+  const [selectedPeriod, setSelectedPeriod] = useState("all");
   const limit = 6;
-  const { data, isLoading, isError, error, refetch } =
-    useGetTransactionsQuery({
+  const periodRange = React.useMemo(
+    () => getPeriodRange(selectedPeriod),
+    [selectedPeriod],
+  );
+  const filters = React.useMemo(
+    () => ({
+      startDate: periodRange.startDate,
+      endDate: periodRange.endDate,
+    }),
+    [periodRange.endDate, periodRange.startDate],
+  );
+  const queryArgs = React.useMemo(
+    () => ({
       page,
       limit,
-    });
+      ...filters,
+    }),
+    [filters, page],
+  );
+  const { data, isLoading, isError, error, refetch } =
+    useGetTransactionsQuery(queryArgs);
 
   const transactions = data?.transactions || [];
   const pages = data?.pages || 1;
   const [deleteTransaction, { isLoading: isDeleting }] =
     useDeleteTransactionMutation();
+  const handlePeriodChange = (period) => {
+    setSelectedPeriod(period);
+    setPage(1);
+  };
+
   const handleRequestDelete = (transaction) => {
     setTransactionToDelete(transaction);
   };
@@ -316,7 +407,11 @@ const TransactionsList = () => {
   if (isLoading) {
     return (
       <div>
-        <TransactionSummary />
+        <PeriodFilter
+          selectedPeriod={selectedPeriod}
+          onPeriodChange={handlePeriodChange}
+        />
+        <TransactionSummary filters={filters} periodLabel={periodRange.label} />
         <Card className="border-0 shadow-sm">
           <CardHeader>
             <CardTitle className="text-xl">Recent Transactions</CardTitle>
@@ -332,7 +427,11 @@ const TransactionsList = () => {
   if (isError) {
     return (
       <div>
-        <TransactionSummary />
+        <PeriodFilter
+          selectedPeriod={selectedPeriod}
+          onPeriodChange={handlePeriodChange}
+        />
+        <TransactionSummary filters={filters} periodLabel={periodRange.label} />
         <Card className="border-0 shadow-sm">
           <CardHeader>
             <CardTitle className="text-xl">Recent Transactions</CardTitle>
@@ -355,7 +454,11 @@ const TransactionsList = () => {
   if (!transactions.length) {
     return (
       <div>
-        <TransactionSummary />
+        <PeriodFilter
+          selectedPeriod={selectedPeriod}
+          onPeriodChange={handlePeriodChange}
+        />
+        <TransactionSummary filters={filters} periodLabel={periodRange.label} />
         <Card className="border-0 shadow-sm">
           <CardHeader>
             <div className="mb-4 flex items-center justify-between gap-3">
@@ -380,7 +483,7 @@ const TransactionsList = () => {
               No transactions yet
             </p>
             <p className="mt-2 text-sm text-slate-500">
-              Add your first expense or income to see it here.
+              Add your first expense or income for {periodRange.label.toLowerCase()}.
             </p>
             <Button
               onClick={() => navigate("/add-transaction")}
@@ -397,7 +500,11 @@ const TransactionsList = () => {
 
   return (
     <div>
-      <TransactionSummary />
+      <PeriodFilter
+        selectedPeriod={selectedPeriod}
+        onPeriodChange={handlePeriodChange}
+      />
+      <TransactionSummary filters={filters} periodLabel={periodRange.label} />
       <div className="mb-4 flex items-center justify-between gap-3">
         <h2 className="text-xl font-semibold text-slate-900">
           Recent Transactions

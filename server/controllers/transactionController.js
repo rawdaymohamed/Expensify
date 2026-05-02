@@ -1,5 +1,26 @@
 import Transaction from "../models/Transaction.js";
 
+const buildDateFilter = ({ startDate, endDate }) => {
+  const dateFilter = {};
+
+  if (startDate) {
+    const start = new Date(startDate);
+    if (!Number.isNaN(start.getTime())) {
+      dateFilter.$gte = start;
+    }
+  }
+
+  if (endDate) {
+    const end = new Date(endDate);
+    if (!Number.isNaN(end.getTime())) {
+      end.setHours(23, 59, 59, 999);
+      dateFilter.$lte = end;
+    }
+  }
+
+  return Object.keys(dateFilter).length ? dateFilter : null;
+};
+
 export const createTransaction = async (req, res) => {
   try {
     // req.body has been validated and sanitized by validate middleware
@@ -42,6 +63,11 @@ export const getTransactions = async (req, res) => {
     const limit = Math.min(50, Number(req.query.limit) || 10);
 
     const query = { user: userId };
+    const dateFilter = buildDateFilter(req.query);
+
+    if (dateFilter) {
+      query.date = dateFilter;
+    }
 
     const [transactions, total] = await Promise.all([
       Transaction.find(query)
@@ -148,8 +174,15 @@ export const getSummary = async (req, res) => {
       return res.status(401).json({ message: "Not authorized" });
     }
 
+    const match = { user: userId };
+    const dateFilter = buildDateFilter(req.query);
+
+    if (dateFilter) {
+      match.date = dateFilter;
+    }
+
     const summary = await Transaction.aggregate([
-      { $match: { user: userId } },
+      { $match: match },
       {
         $group: {
           _id: "$type",
