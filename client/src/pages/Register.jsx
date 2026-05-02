@@ -2,23 +2,25 @@ import { Link, useNavigate } from "react-router-dom";
 import { useEffect } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
+import { Loader2 } from "lucide-react";
 
-import {
-  Card,
-  CardContent,
-  CardHeader,
-  CardTitle,
-  CardDescription,
-} from "@/components/ui/card";
+import AuthLayout from "@/components/AuthLayout";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import PasswordField from "@/components/PasswordField";
 
 import { useRegisterMutation } from "../features/api/authApi";
 import { registerSchema } from "../validations/authSchema";
 
 const Register = () => {
   const navigate = useNavigate();
+  const nameErrorId = "register-name-error";
+  const emailErrorId = "register-email-error";
+  const passwordErrorId = "register-password-error";
+  const passwordHelpId = "register-password-help";
+  const reassuranceId = "register-reassurance";
+  const formErrorId = "register-form-error";
 
   useEffect(() => {
     const token =
@@ -62,96 +64,116 @@ const Register = () => {
     }
   };
 
+  const footer = (
+    <p className="text-center text-sm text-muted-foreground">
+      Already have an account?{" "}
+      <Link
+        to="/login"
+        className="font-medium text-foreground underline underline-offset-4"
+      >
+        Sign in
+      </Link>
+    </p>
+  );
+
   return (
-    <main className="min-h-screen bg-muted/40">
-      <div className="container mx-auto flex min-h-screen items-center justify-center px-4 py-10">
-        <Card className="w-full max-w-md shadow-lg">
-          <CardHeader className="space-y-2 text-center">
-            <CardTitle className="text-2xl font-bold">
-              Create your account
-            </CardTitle>
-            <CardDescription>
-              Start tracking your income and expenses with Expensify
-            </CardDescription>
-          </CardHeader>
-
-          <CardContent>
-            <form
-              onSubmit={handleSubmit(onSubmit)}
-              className="space-y-5"
-              noValidate
-            >
-              <div className="space-y-2">
-                <Label htmlFor="name">Full name</Label>
-                <Input
-                  id="name"
-                  type="text"
-                  placeholder="Enter your full name"
-                  autoComplete="name"
-                  {...register("name")}
-                />
-                {errors.name && (
-                  <p className="text-sm text-red-500">{errors.name.message}</p>
-                )}
-              </div>
-
-              <div className="space-y-2">
-                <Label htmlFor="email">Email address</Label>
-                <Input
-                  id="email"
-                  type="email"
-                  placeholder="Enter your email"
-                  autoComplete="email"
-                  {...register("email")}
-                />
-                {errors.email && (
-                  <p className="text-sm text-red-500">{errors.email.message}</p>
-                )}
-              </div>
-
-              <div className="space-y-2">
-                <Label htmlFor="password">Password</Label>
-                <Input
-                  id="password"
-                  type="password"
-                  placeholder="Create a password"
-                  autoComplete="new-password"
-                  {...register("password")}
-                />
-                <p className="text-sm text-muted-foreground">
-                  Use at least 6 characters.
-                </p>
-                {errors.password && (
-                  <p className="text-sm text-red-500">
-                    {errors.password.message}
-                  </p>
-                )}
-              </div>
-
-              {error && (
-                <p className="text-sm text-red-500">
-                  {error?.data?.message || "Something went wrong"}
-                </p>
-              )}
-
-              <Button type="submit" className="w-full" disabled={isLoading}>
-                {isLoading ? "Creating account..." : "Create account"}
-              </Button>
-            </form>
-
-            <p className="mt-6 text-center text-sm text-muted-foreground">
-              Already have an account?{" "}
-              <Link
-                to="/login"
-                className="font-medium text-foreground underline underline-offset-4"
-              >
-                Sign in
-              </Link>
+    <AuthLayout
+      title="Create your account"
+      description="Start tracking your income and expenses with Expensify."
+      footer={footer}
+    >
+      <form onSubmit={handleSubmit(onSubmit)} className="space-y-6" noValidate>
+        <div className="space-y-2.5">
+          <Label htmlFor="name">Full name</Label>
+          <Input
+            id="name"
+            type="text"
+            placeholder="Your name"
+            autoComplete="name"
+            className="h-11"
+            aria-invalid={Boolean(errors.name)}
+            aria-describedby={errors.name ? nameErrorId : undefined}
+            {...register("name")}
+          />
+          {errors.name && (
+            <p id={nameErrorId} className="text-sm text-red-500">
+              {errors.name.message}
             </p>
-          </CardContent>
-        </Card>
-      </div>
-    </main>
+          )}
+        </div>
+
+        <div className="space-y-2.5">
+          <Label htmlFor="email">Email address</Label>
+          <Input
+            id="email"
+            type="email"
+            placeholder="you@example.com"
+            autoComplete="email"
+            className="h-11"
+            aria-invalid={Boolean(errors.email)}
+            aria-describedby={errors.email ? emailErrorId : undefined}
+            {...register("email")}
+          />
+          {errors.email && (
+            <p id={emailErrorId} className="text-sm text-red-500">
+              {errors.email.message}
+            </p>
+          )}
+        </div>
+
+        <div className="space-y-2.5">
+          <Label htmlFor="password">Password</Label>
+          <PasswordField
+            id="password"
+            placeholder="Create a password"
+            autoComplete="new-password"
+            hasError={Boolean(errors.password)}
+            describedBy={
+              errors.password
+                ? `${passwordHelpId} ${passwordErrorId}`
+                : passwordHelpId
+            }
+            toggleLabel="password"
+            {...register("password")}
+          />
+          <p id={passwordHelpId} className="text-xs text-muted-foreground">
+            Use at least 6 characters.
+          </p>
+          {errors.password && (
+            <p id={passwordErrorId} className="text-sm text-red-500">
+              {errors.password.message}
+            </p>
+          )}
+        </div>
+
+        <p id={reassuranceId} className="text-xs text-slate-500">
+          Your transactions stay in your account.
+        </p>
+
+        {error && (
+          <div
+            id={formErrorId}
+            className="rounded-lg border border-red-200 bg-red-50 px-3 py-2 text-sm text-red-700"
+            role="alert"
+          >
+            {error?.data?.message ||
+              "We could not create your account. Try again."}
+          </div>
+        )}
+
+        <Button
+          type="submit"
+          className="h-11 w-full"
+          disabled={isLoading}
+          aria-describedby={
+            error ? `${reassuranceId} ${formErrorId}` : reassuranceId
+          }
+        >
+          {isLoading && <Loader2 className="h-4 w-4 animate-spin" />}
+          <span>{isLoading ? "Creating account..." : "Create account"}</span>
+        </Button>
+      </form>
+    </AuthLayout>
   );
 };
 
